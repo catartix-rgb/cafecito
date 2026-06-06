@@ -1,10 +1,19 @@
+'use client';
+
 /**
  * Estado global del "modo Dos Caras": ¿estamos en Mi casa o en El negocio?
- * Por ahora vive en memoria; más adelante lo recordaremos entre sesiones
- * con almacenamiento local.
+ * Se recuerda entre visitas usando localStorage.
  */
-import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
-import type { Modo } from '../theme';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from 'react';
+import type { Modo } from '@/lib/theme';
 
 type ModoContexto = {
   modo: Modo;
@@ -13,15 +22,29 @@ type ModoContexto = {
 };
 
 const Contexto = createContext<ModoContexto | null>(null);
+const CLAVE_GUARDADO = 'cafecito.modo';
 
 export function ProveedorModo({ children }: { children: ReactNode }) {
-  const [modo, setModo] = useState<Modo>('NEGOCIO');
+  const [modo, setModoState] = useState<Modo>('NEGOCIO');
 
-  const alternar = useCallback(() => {
-    setModo((actual) => (actual === 'NEGOCIO' ? 'PERSONAL' : 'NEGOCIO'));
+  // Al montar, recuperamos el último modo usado.
+  useEffect(() => {
+    const guardado = window.localStorage.getItem(CLAVE_GUARDADO);
+    if (guardado === 'PERSONAL' || guardado === 'NEGOCIO') {
+      setModoState(guardado);
+    }
   }, []);
 
-  const valor = useMemo(() => ({ modo, setModo, alternar }), [modo, alternar]);
+  const setModo = useCallback((m: Modo) => {
+    setModoState(m);
+    window.localStorage.setItem(CLAVE_GUARDADO, m);
+  }, []);
+
+  const alternar = useCallback(() => {
+    setModo(modo === 'NEGOCIO' ? 'PERSONAL' : 'NEGOCIO');
+  }, [modo, setModo]);
+
+  const valor = useMemo(() => ({ modo, setModo, alternar }), [modo, setModo, alternar]);
 
   return <Contexto.Provider value={valor}>{children}</Contexto.Provider>;
 }

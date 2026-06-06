@@ -2,6 +2,8 @@
 
 App de finanzas **ultra-simple** para administrar un pequeño negocio de café y las finanzas personales, pensada para alguien que se abruma con tablas y números. Todo es visual: la idea de una **taza que se llena o se vacía**, botones gigantes y registro de un gasto en **3 toques**.
 
+Es una **PWA (Progressive Web App)**: se abre en el navegador del teléfono y se puede **instalar en la pantalla de inicio** para que se vea y funcione como una app normal, incluso sin internet.
+
 ## Idea central: "Dos Caras"
 
 Un switch gigante alterna entre dos modos:
@@ -11,30 +13,37 @@ Un switch gigante alterna entre dos modos:
 
 ## Stack
 
-- **Expo SDK 56** (React Native 0.85, React 19) — Android, iPhone y web con un solo código.
-- **expo-router** — navegación basada en archivos.
+- **Next.js 16** (App Router) + **React 19** — desplegado en Vercel.
+- **Tailwind CSS v4** — interfaz muy visual, rápida de construir.
+- **PWA** — manifest + service worker (instalable y offline).
 - **TypeScript** estricto.
-- _(Próximamente)_ react-native-svg + Reanimated para la taza animada, expo-sqlite + Drizzle (offline-first) y Supabase (respaldo en la nube).
+- _(Próximamente)_ animación de la taza, IndexedDB (offline-first) y Supabase (respaldo en la nube).
 
-## Cómo correrlo
+## Correr en local
 
 ```bash
 npm install
-npx expo start
+npm run dev
 ```
 
-Instala **Expo Go** en tu teléfono y escanea el QR. Cada cambio se refleja al instante.
+Abre http://localhost:3000. Para probar la instalación PWA en tu teléfono, despliega a Vercel (necesita HTTPS).
 
-> Nota: el proyecto usa `legacy-peer-deps` (ver `.npmrc`) por la novedad del SDK 56.
+## Desplegar a Vercel
+
+Conecta este repositorio en [vercel.com/new](https://vercel.com/new). Vercel detecta Next.js automáticamente; no requiere configuración.
 
 ## Estructura
 
 ```
-app/
-  _layout.tsx   Raíz: área segura + proveedor de modo + navegación
-  index.tsx     Pantalla de Inicio
 src/
-  theme/        Sistema de diseño (colores, tipografías, los 2 modos)
-  state/        Estado global del modo "Dos Caras"
-  components/   Componentes reutilizables (el switch gigante)
+  app/
+    layout.tsx        Layout raíz (idioma, metadatos, proveedor de modo)
+    page.tsx          Página de inicio
+    manifest.ts       Manifest PWA
+    icon*.tsx         Íconos generados por código
+  components/         Switch Dos Caras, pantalla de inicio, registro del SW
+  state/              Estado global del modo (con persistencia)
+  lib/                Sistema de diseño (tema) y generador de íconos
+public/
+  sw.js               Service worker (offline)
 ```

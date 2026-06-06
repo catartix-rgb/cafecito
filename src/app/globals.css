@@ -1,0 +1,39 @@
+@import "tailwindcss";
+
+/**
+ * Tokens de diseño de Cafecito como tema de Tailwind v4.
+ * Esto habilita utilidades como `bg-crema`, `text-tinta`, `border-borde`, etc.
+ */
+@theme {
+  --color-crema: #fbf7f0;
+  --color-blanco: #ffffff;
+  --color-tinta: #2b2420;
+  --color-tinta-suave: #6b6157;
+  --color-borde: #e9e1d6;
+  --color-bien: #3e8e5a;
+  --color-ojo: #e0a100;
+  --color-cuidado: #d6452f;
+
+  --radius-suave: 16px;
+  --radius-grande: 24px;
+}
+
+html {
+  /* Mantenemos la app siempre en tono claro y cálido (no seguimos el modo oscuro
+     del sistema, porque la app tiene su propia identidad de color). */
+  color-scheme: light;
+}
+
+body {
+  background: var(--color-crema);
+  color: var(--color-tinta);
+  /* Evita el resaltado azul al tocar botones en móvil. */
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Mejora la legibilidad y desactiva la selección accidental de texto en controles. */
+button {
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: manipulation;
+}
