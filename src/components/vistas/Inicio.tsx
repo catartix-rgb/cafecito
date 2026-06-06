@@ -150,7 +150,10 @@ export function Inicio({
                     <Icono nombre={cat?.icono ?? 'Ellipsis'} size={20} />
                   </span>
                   <div className="min-w-0 flex-1">
-                    <p className="truncate font-semibold">{cat?.nombre ?? 'Movimiento'}</p>
+                    <p className="truncate font-semibold">
+                      {cat?.nombre ?? 'Movimiento'}
+                      {t.beneficiario ? ` · ${t.beneficiario}` : ''}
+                    </p>
                     <p className="text-sm text-white/50">{fechaCorta(t.fecha)}</p>
                   </div>
                   <span

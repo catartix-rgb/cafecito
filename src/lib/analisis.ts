@@ -62,6 +62,24 @@ export function gastoHormigaSemana(transacciones: Transaccion[]): number {
     .reduce((s, t) => s + t.monto, 0);
 }
 
+/**
+ * Apoyo familiar (categoría "apoyo") agrupado por hijo, en el periodo dado.
+ * Devuelve un objeto como { Pablo: 700, Alex: 300 } (solo incluye a quien recibió algo).
+ */
+export function apoyoPorHijo(
+  transacciones: Transaccion[],
+  periodo: 'mes' | 'semana'
+): Record<string, number> {
+  const hoy = new Date();
+  const dentro = (iso: string) => (periodo === 'mes' ? mismoMes(iso, hoy) : mismaSemana(iso, hoy));
+  const totales: Record<string, number> = {};
+  for (const t of transacciones) {
+    if (t.categoriaId !== 'apoyo' || !t.beneficiario || !dentro(t.fecha)) continue;
+    totales[t.beneficiario] = (totales[t.beneficiario] ?? 0) + t.monto;
+  }
+  return totales;
+}
+
 export type TipoConsejo = 'BIEN' | 'OJO' | 'CUIDADO';
 
 export type Consejo = {

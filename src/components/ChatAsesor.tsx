@@ -18,6 +18,7 @@ type Mensaje = { role: 'user' | 'assistant'; content: string };
 const CHIPS = [
   { icono: 'ChartColumn', etiqueta: 'Resumen de la semana', prompt: '¿Cómo me fue esta semana con mi dinero?' },
   { icono: 'Candy', etiqueta: 'Mis gastos hormiga', prompt: '¿En qué se me están yendo los antojos?' },
+  { icono: 'HandCoins', etiqueta: 'Gastos de Pablo y Alex', prompt: '¿Cuánto les he dado a Pablo y a Alex este mes? Dame el desglose de cada uno.' },
   { icono: 'Store', etiqueta: 'Salud de la tienda', prompt: '¿Cómo va mi negocio de café este mes?' },
 ];
 

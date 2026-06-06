@@ -33,7 +33,10 @@ export function SheetDetalle({ transaccion, onClose }: { transaccion: Transaccio
           >
             <Icono nombre={cat?.icono ?? 'Ellipsis'} size={30} />
           </span>
-          <p className="text-lg font-semibold text-white/70">{cat?.nombre ?? 'Movimiento'}</p>
+          <p className="text-lg font-semibold text-white/70">
+            {cat?.nombre ?? 'Movimiento'}
+            {transaccion.beneficiario ? ` · ${transaccion.beneficiario}` : ''}
+          </p>
           <p className="text-5xl font-extrabold tabular-nums" style={{ color: ingreso ? 'var(--color-bien)' : '#fff' }}>
             {ingreso ? '+' : '−'}
             {pesos(transaccion.monto)}

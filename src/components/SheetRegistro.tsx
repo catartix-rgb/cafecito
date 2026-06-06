@@ -6,7 +6,7 @@
  */
 import { useState } from 'react';
 import { modos } from '@/lib/theme';
-import { categoriasDe, store } from '@/lib/store';
+import { BENEFICIARIOS, categoriasDe, store } from '@/lib/store';
 import { pesos } from '@/lib/format';
 import { useModo } from '@/state/mode';
 import { Icono } from './Icono';
@@ -19,19 +19,33 @@ export function SheetRegistro({ onClose }: { onClose: () => void }) {
 
   const [digitos, setDigitos] = useState('');
   const [categoriaId, setCategoriaId] = useState<string | null>(null);
+  const [beneficiario, setBeneficiario] = useState<string | null>(null);
   const [guardado, setGuardado] = useState(false);
 
   const monto = parseInt(digitos || '0', 10);
-  const listo = monto > 0 && categoriaId !== null;
+  const catSel = categorias.find((c) => c.id === categoriaId);
+  const pideBeneficiario = catSel?.pideBeneficiario ?? false;
+  const listo = monto > 0 && catSel != null && (!pideBeneficiario || beneficiario != null);
+
+  function elegirCategoria(id: string) {
+    setCategoriaId(id);
+    // Al cambiar de categoría, limpiamos el beneficiario para no etiquetar mal.
+    setBeneficiario(null);
+  }
 
   function teclear(t: string) {
     setDigitos((d) => aplicarTecla(d, t));
   }
 
   function guardar() {
-    if (!listo) return;
-    const cat = categorias.find((c) => c.id === categoriaId)!;
-    store.agregar({ monto, tipo: cat.tipo, modo, categoriaId: cat.id });
+    if (!listo || !catSel) return;
+    store.agregar({
+      monto,
+      tipo: catSel.tipo,
+      modo,
+      categoriaId: catSel.id,
+      ...(pideBeneficiario && beneficiario ? { beneficiario } : {}),
+    });
     setGuardado(true);
     setTimeout(onClose, 1100);
   }
@@ -70,7 +84,7 @@ export function SheetRegistro({ onClose }: { onClose: () => void }) {
             return (
               <button
                 key={c.id}
-                onClick={() => setCategoriaId(c.id)}
+                onClick={() => elegirCategoria(c.id)}
                 className="flex flex-col items-center gap-1.5 rounded-2xl py-3 text-xs font-semibold transition-all"
                 style={{
                   background: activa ? m.acento : 'rgba(255,255,255,0.08)',
@@ -84,6 +98,34 @@ export function SheetRegistro({ onClose }: { onClose: () => void }) {
             );
           })}
         </div>
+
+        {/* ¿Para quién? — solo para Apoyo familiar (Hijos) */}
+        {pideBeneficiario && (
+          <div className="aparecer flex flex-col gap-2">
+            <p className="px-1 text-sm font-semibold text-white/70">¿Para quién?</p>
+            <div className="grid grid-cols-2 gap-2.5">
+              {BENEFICIARIOS.map((nombre) => {
+                const activo = beneficiario === nombre;
+                return (
+                  <button
+                    key={nombre}
+                    onClick={() => setBeneficiario(nombre)}
+                    aria-pressed={activo}
+                    className="flex items-center justify-center gap-2 rounded-2xl py-4 text-lg font-bold transition-all"
+                    style={{
+                      background: activo ? m.acento : 'rgba(255,255,255,0.08)',
+                      color: activo ? '#1a120c' : 'rgba(255,255,255,0.85)',
+                      border: '1px solid rgba(255,255,255,0.12)',
+                    }}
+                  >
+                    <Icono nombre="User" size={20} />
+                    {nombre}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         {/* Teclado */}
         <Teclado onTecla={teclear} />

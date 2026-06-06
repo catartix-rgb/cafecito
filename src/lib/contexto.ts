@@ -6,7 +6,7 @@
 import type { Transaccion } from './store';
 import { categoriaPorId } from './store';
 import type { Presupuestos } from './presupuestos';
-import { resumenDelMes, gastoHormigaSemana, PRECIO_COSTAL } from './analisis';
+import { resumenDelMes, gastoHormigaSemana, apoyoPorHijo, PRECIO_COSTAL } from './analisis';
 import { pesos, fechaCorta } from './format';
 
 export function construirContexto(
@@ -52,12 +52,35 @@ export function construirContexto(
       (hormiga > 0 ? ` (equivale a ${costales <= 1 ? 'un costal' : costales + ' costales'} de café, a ${pesos(PRECIO_COSTAL)} cada uno).` : '.')
   );
   lineas.push('');
+
+  // Apoyo familiar a los hijos (Pablo / Alex)
+  const apoyoMes = apoyoPorHijo(transacciones, 'mes');
+  const apoyoSemana = apoyoPorHijo(transacciones, 'semana');
+  const hijosMes = Object.keys(apoyoMes);
+  lineas.push('APOYO A LOS HIJOS (dinero que les dio):');
+  if (hijosMes.length === 0) {
+    lineas.push('- Este mes no le ha dado dinero a ningún hijo (o no lo ha anotado).');
+  } else {
+    const totalMes = Object.values(apoyoMes).reduce((s, n) => s + n, 0);
+    lineas.push(`- Este mes (total ${pesos(totalMes)}):`);
+    for (const hijo of hijosMes) {
+      lineas.push(`    · ${hijo}: ${pesos(apoyoMes[hijo])}`);
+    }
+    const hijosSem = Object.keys(apoyoSemana);
+    if (hijosSem.length > 0) {
+      const totalSem = Object.values(apoyoSemana).reduce((s, n) => s + n, 0);
+      lineas.push(`- Esta semana (total ${pesos(totalSem)}): ${hijosSem.map((h) => `${h} ${pesos(apoyoSemana[h])}`).join(', ')}.`);
+    }
+  }
+  lineas.push('');
+
   lineas.push('Últimos movimientos (del más reciente al más antiguo):');
   for (const t of transacciones.slice(0, 25)) {
     const cat = categoriaPorId(t.categoriaId);
     const cara = t.modo === 'NEGOCIO' ? 'NEGOCIO' : 'CASA';
     const signo = t.tipo === 'INGRESO' ? '+' : '-';
-    lineas.push(`- [${cara}] ${cat?.nombre ?? 'Movimiento'}: ${signo}${pesos(t.monto)} (${fechaCorta(t.fecha)})`);
+    const quien = t.beneficiario ? ` para ${t.beneficiario}` : '';
+    lineas.push(`- [${cara}] ${cat?.nombre ?? 'Movimiento'}${quien}: ${signo}${pesos(t.monto)} (${fechaCorta(t.fecha)})`);
   }
 
   return lineas.join('\n');

@@ -16,6 +16,7 @@ export type Categoria = {
   tipo: Tipo;
   icono: string; // nombre de ícono Lucide
   esHormiga?: boolean; // "gasto hormiga"/antojo (para el Contador Virtual)
+  pideBeneficiario?: boolean; // si true, el registro pregunta para quién (ej. hijos)
 };
 
 export type Transaccion = {
@@ -24,9 +25,13 @@ export type Transaccion = {
   tipo: Tipo;
   modo: Modo;
   categoriaId: string;
+  beneficiario?: string; // para "Apoyo familiar": a quién se le dio (Pablo / Alex)
   nota?: string;
   fecha: string; // ISO
 };
+
+/** Personas a las que se les puede asignar el apoyo familiar. */
+export const BENEFICIARIOS = ['Pablo', 'Alex'] as const;
 
 /** Categorías predefinidas. El `tipo` de la categoría define si suma o resta. */
 export const CATEGORIAS: Categoria[] = [
@@ -39,6 +44,7 @@ export const CATEGORIAS: Categoria[] = [
   { id: 'super', nombre: 'Súper', modo: 'PERSONAL', tipo: 'GASTO', icono: 'ShoppingCart' },
   { id: 'antojos', nombre: 'Antojos', modo: 'PERSONAL', tipo: 'GASTO', icono: 'Candy', esHormiga: true },
   { id: 'salidas', nombre: 'Salidas', modo: 'PERSONAL', tipo: 'GASTO', icono: 'Utensils' },
+  { id: 'apoyo', nombre: 'Hijos', modo: 'PERSONAL', tipo: 'GASTO', icono: 'HandCoins', pideBeneficiario: true },
   { id: 'ingreso', nombre: 'Ingreso', modo: 'PERSONAL', tipo: 'INGRESO', icono: 'Wallet' },
 ];
 
