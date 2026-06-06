@@ -11,6 +11,7 @@ import { NavInferior } from './NavInferior';
 import { SheetRegistro } from './SheetRegistro';
 import { SheetMeta } from './SheetMeta';
 import { SheetDetalle } from './SheetDetalle';
+import { ChatAsesor } from './ChatAsesor';
 import { Inicio } from './vistas/Inicio';
 import { Consejos } from './vistas/Consejos';
 
@@ -21,6 +22,7 @@ export function App() {
   const [registrando, setRegistrando] = useState(false);
   const [editandoMeta, setEditandoMeta] = useState(false);
   const [detalle, setDetalle] = useState<Transaccion | null>(null);
+  const [asesorAbierto, setAsesorAbierto] = useState(false);
 
   return (
     <>
@@ -29,7 +31,7 @@ export function App() {
         {vista === 'inicio' ? (
           <Inicio onEditarMeta={() => setEditandoMeta(true)} onMovimiento={setDetalle} />
         ) : (
-          <Consejos />
+          <Consejos onAbrirAsesor={() => setAsesorAbierto(true)} />
         )}
       </div>
 
@@ -38,6 +40,7 @@ export function App() {
       {registrando && <SheetRegistro onClose={() => setRegistrando(false)} />}
       {editandoMeta && <SheetMeta onClose={() => setEditandoMeta(false)} />}
       {detalle && <SheetDetalle transaccion={detalle} onClose={() => setDetalle(null)} />}
+      {asesorAbierto && <ChatAsesor onClose={() => setAsesorAbierto(false)} />}
     </>
   );
 }

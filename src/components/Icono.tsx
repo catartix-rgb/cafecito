@@ -24,6 +24,10 @@ import {
   ArrowDownRight,
   Pencil,
   Target,
+  ChartColumn,
+  Send,
+  Store,
+  MessageCircle,
   type LucideProps,
 } from 'lucide-react';
 import type { ComponentType } from 'react';
@@ -50,6 +54,10 @@ const MAPA: Record<string, ComponentType<LucideProps>> = {
   ArrowDownRight,
   Pencil,
   Target,
+  ChartColumn,
+  Send,
+  Store,
+  MessageCircle,
 };
 
 export function Icono({ nombre, ...props }: { nombre: string } & LucideProps) {

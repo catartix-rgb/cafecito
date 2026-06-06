@@ -14,10 +14,29 @@ Un switch gigante alterna entre dos modos:
 ## Stack
 
 - **Next.js 16** (App Router) + **React 19** — desplegado en Vercel.
-- **Tailwind CSS v4** — interfaz muy visual, rápida de construir.
+- **Tailwind CSS v4** — interfaz muy visual, rápida de construir (estética *liquid glass*).
 - **PWA** — manifest + service worker (instalable y offline).
+- **lucide-react** — íconos minimalistas (cero emojis en la app).
+- **@anthropic-ai/sdk** — Asesor de IA (Claude) por chat, con streaming.
 - **TypeScript** estricto.
-- _(Próximamente)_ animación de la taza, IndexedDB (offline-first) y Supabase (respaldo en la nube).
+- _(Próximamente)_ Supabase (respaldo en la nube y monitoreo remoto).
+
+## Asesor de IA (chat)
+
+La pestaña **Consejos** incluye un asesor por chat: la usuaria pregunta en lenguaje
+natural ("¿en qué se me fue el dinero esta semana?") y la IA responde con base en
+sus datos reales (RAG local). El navegador arma un resumen de las transacciones y
+presupuestos guardados en `localStorage` y lo envía al route handler
+`src/app/api/asesor/route.ts`, que llama a Claude con streaming. La API key vive
+solo en el servidor.
+
+**Requiere una API key de Anthropic.** Sin ella, el chat muestra un aviso amable.
+
+- **En local:** crea un archivo `.env.local` en la raíz del proyecto con:
+  ```
+  ANTHROPIC_API_KEY=sk-ant-...
+  ```
+- **En Vercel:** agrega `ANTHROPIC_API_KEY` en Project → Settings → Environment Variables y vuelve a desplegar.
 
 ## Correr en local
 
@@ -37,13 +56,16 @@ Conecta este repositorio en [vercel.com/new](https://vercel.com/new). Vercel det
 ```
 src/
   app/
-    layout.tsx        Layout raíz (idioma, metadatos, proveedor de modo)
-    page.tsx          Página de inicio
-    manifest.ts       Manifest PWA
-    icon*.tsx         Íconos generados por código
-  components/         Switch Dos Caras, pantalla de inicio, registro del SW
-  state/              Estado global del modo (con persistencia)
-  lib/                Sistema de diseño (tema) y generador de íconos
+    layout.tsx          Layout raíz (idioma, metadatos, proveedor de modo)
+    page.tsx            Punto de entrada (renderiza <App/>)
+    manifest.ts         Manifest PWA
+    icon*.tsx           Íconos generados por código
+    api/asesor/route.ts Route handler del Asesor de IA (Claude, streaming)
+  components/           App, vistas (Inicio/Consejos), hojas (registro/meta/detalle),
+                        ChatAsesor, switch Dos Caras, taza SVG, teclado, íconos…
+  state/                Estado global: modo, transacciones, presupuestos (persistidos)
+  lib/                  theme, store, presupuestos, analisis (Contador Virtual),
+                        contexto (RAG), format, icono
 public/
-  sw.js               Service worker (offline)
+  sw.js                 Service worker (offline)
 ```

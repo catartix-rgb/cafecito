@@ -17,7 +17,7 @@ const COLOR_SEMAFORO: Record<TipoConsejo, string> = {
   CUIDADO: 'var(--color-cuidado)',
 };
 
-export function Consejos() {
+export function Consejos({ onAbrirAsesor }: { onAbrirAsesor: () => void }) {
   const transacciones = useTransacciones();
   const presupuestos = usePresupuestos();
   const consejos = useMemo(
@@ -36,6 +36,21 @@ export function Consejos() {
           <p className="text-lg text-white/60">Consejos de la semana</p>
         </div>
       </header>
+
+      {/* Entrada al asesor por chat */}
+      <button
+        onClick={onAbrirAsesor}
+        className="glass flex items-center gap-3 rounded-3xl p-4 text-left transition-transform active:scale-[0.99]"
+      >
+        <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white/10">
+          <Icono nombre="MessageCircle" size={24} />
+        </span>
+        <div className="flex-1">
+          <p className="font-bold">Pregúntale a tu asesor</p>
+          <p className="text-sm text-white/60">Háblale como a una persona sobre tu dinero</p>
+        </div>
+        <Icono nombre="Send" size={20} />
+      </button>
 
       <div className="flex flex-col gap-4">
         {consejos.map((c) => (
