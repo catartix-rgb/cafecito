@@ -4,7 +4,8 @@
  * en lenguaje natural y amigable. Funciones puras (fáciles de probar).
  */
 import { categoriaPorId, type Transaccion } from './store';
-import type { Modo } from './theme';
+import { modos, type Modo } from './theme';
+import type { Presupuestos } from './presupuestos';
 import { pesos } from './format';
 
 /** Precio aproximado de un costal de café (MXN), para las analogías. */
@@ -76,7 +77,10 @@ export type Consejo = {
  * La analogía estrella cruza las dos caras: el gasto hormiga personal se
  * mide en "costales de café" del negocio.
  */
-export function generarConsejos(transacciones: Transaccion[]): Consejo[] {
+export function generarConsejos(
+  transacciones: Transaccion[],
+  presupuestos: Presupuestos = {}
+): Consejo[] {
   if (transacciones.length === 0) {
     return [
       {
@@ -90,6 +94,32 @@ export function generarConsejos(transacciones: Transaccion[]): Consejo[] {
   }
 
   const consejos: Consejo[] = [];
+
+  // 0) Avisos de presupuesto (prioritarios): ¿cómo vamos contra la meta?
+  for (const modo of ['NEGOCIO', 'PERSONAL'] as Modo[]) {
+    const meta = presupuestos[modo] ?? 0;
+    if (meta <= 0) continue;
+    const gastos = resumenDelMes(transacciones, modo).gastos;
+    const uso = gastos / meta;
+    const nombre = modos[modo].nombre.toLowerCase();
+    if (uso >= 1) {
+      consejos.push({
+        id: `meta-${modo}`,
+        tipo: 'CUIDADO',
+        icono: 'Target',
+        titulo: `Te pasaste en ${nombre}`,
+        texto: `Gastaste ${pesos(gastos)} de tu meta de ${pesos(meta)}. Vamos con calma el resto del mes.`,
+      });
+    } else if (uso >= 0.8) {
+      consejos.push({
+        id: `meta-${modo}`,
+        tipo: 'OJO',
+        icono: 'Target',
+        titulo: `Cerca de la meta en ${nombre}`,
+        texto: `Llevas ${pesos(gastos)} de ${pesos(meta)}. Te queda ${pesos(meta - gastos)} para el mes.`,
+      });
+    }
+  }
 
   // 1) Gasto hormiga de la semana en "costales de café".
   const hormiga = gastoHormigaSemana(transacciones);

@@ -10,8 +10,7 @@ import { categoriasDe, store } from '@/lib/store';
 import { pesos } from '@/lib/format';
 import { useModo } from '@/state/mode';
 import { Icono } from './Icono';
-
-const TECLAS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '00', '0', 'borrar'];
+import { Teclado, aplicarTecla } from './Teclado';
 
 export function SheetRegistro({ onClose }: { onClose: () => void }) {
   const { modo } = useModo();
@@ -26,11 +25,7 @@ export function SheetRegistro({ onClose }: { onClose: () => void }) {
   const listo = monto > 0 && categoriaId !== null;
 
   function teclear(t: string) {
-    if (t === 'borrar') {
-      setDigitos((d) => d.slice(0, -1));
-      return;
-    }
-    setDigitos((d) => (d.length >= 7 ? d : (d + t).replace(/^0+/, '')));
+    setDigitos((d) => aplicarTecla(d, t));
   }
 
   function guardar() {
@@ -91,18 +86,7 @@ export function SheetRegistro({ onClose }: { onClose: () => void }) {
         </div>
 
         {/* Teclado */}
-        <div className="grid grid-cols-3 gap-2.5">
-          {TECLAS.map((t) => (
-            <button
-              key={t}
-              onClick={() => teclear(t)}
-              className="flex h-14 items-center justify-center rounded-2xl bg-white/8 text-2xl font-bold transition-colors active:bg-white/20"
-              style={{ background: 'rgba(255,255,255,0.07)' }}
-            >
-              {t === 'borrar' ? <Icono nombre="Delete" size={24} /> : t}
-            </button>
-          ))}
-        </div>
+        <Teclado onTecla={teclear} />
 
         {/* Guardar */}
         <button

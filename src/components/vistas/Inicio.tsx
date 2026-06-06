@@ -1,40 +1,53 @@
 'use client';
 
 /**
- * Tablero de Inicio. Lee las transacciones reales del modo activo y se
- * actualiza al instante cuando se agrega un movimiento (reactividad).
+ * Tablero de Inicio. Lee transacciones y presupuesto del modo activo y se
+ * actualiza al instante. La taza se "vacía" conforme se gasta de la meta.
  */
 import { useMemo } from 'react';
 import { modos } from '@/lib/theme';
-import { categoriaPorId } from '@/lib/store';
+import { categoriaPorId, type Transaccion } from '@/lib/store';
 import { resumenDelMes } from '@/lib/analisis';
 import { pesos, fechaCorta } from '@/lib/format';
 import { useModo } from '@/state/mode';
 import { useTransacciones } from '@/state/useTransacciones';
+import { usePresupuestos } from '@/state/usePresupuestos';
 import { SwitchDosCaras } from '../SwitchDosCaras';
 import { TazaGauge } from '../TazaGauge';
 import { Glass } from '../Glass';
 import { Icono } from '../Icono';
 
-export function Inicio() {
+export function Inicio({
+  onEditarMeta,
+  onMovimiento,
+}: {
+  onEditarMeta: () => void;
+  onMovimiento: (t: Transaccion) => void;
+}) {
   const { modo } = useModo();
   const transacciones = useTransacciones();
+  const presupuestos = usePresupuestos();
   const m = modos[modo];
 
   const resumen = useMemo(() => resumenDelMes(transacciones, modo), [transacciones, modo]);
-
   const recientes = useMemo(
-    () => transacciones.filter((t) => t.modo === modo).slice(0, 4),
+    () => transacciones.filter((t) => t.modo === modo).slice(0, 5),
     [transacciones, modo]
   );
 
-  // La taza se llena según cuánto se ha gastado de lo que entró este mes.
+  const meta = presupuestos[modo] ?? 0;
+  const restante = meta - resumen.gastos;
+
+  // Con meta: la taza llena = nada gastado, y se vacía al gastar.
+  // Sin meta: la taza se llena con lo que ya se gastó de lo que entró.
   const pct =
-    resumen.ingresos > 0
-      ? resumen.gastos / resumen.ingresos
-      : resumen.gastos > 0
-        ? 1
-        : 0;
+    meta > 0
+      ? Math.max(0, Math.min(1, restante / meta))
+      : resumen.ingresos > 0
+        ? resumen.gastos / resumen.ingresos
+        : resumen.gastos > 0
+          ? 1
+          : 0;
 
   return (
     <div className="mx-auto flex w-full max-w-md flex-col gap-5 px-5 pt-10 pb-40">
@@ -45,18 +58,52 @@ export function Inicio() {
 
       <SwitchDosCaras />
 
-      {/* Hero: la taza + balance del mes */}
-      <Glass className="flex flex-col items-center gap-2 p-6 text-center aparecer">
-        <TazaGauge pct={pct} accent={m.acento} />
-        <p className="text-sm font-medium uppercase tracking-wide text-white/55">
-          Balance de {m.nombre.toLowerCase()} este mes
-        </p>
-        <p
-          className="text-5xl font-extrabold tabular-nums"
-          style={{ color: resumen.balance >= 0 ? 'var(--color-bien)' : 'var(--color-cuidado)' }}
+      {/* Hero: la taza + meta o balance del mes */}
+      <Glass className="relative flex flex-col items-center gap-2 p-6 text-center aparecer">
+        <button
+          aria-label="Editar meta del mes"
+          onClick={onEditarMeta}
+          className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-white/10"
         >
-          {pesos(resumen.balance)}
-        </p>
+          <Icono nombre="Pencil" size={18} />
+        </button>
+
+        <TazaGauge pct={pct} accent={m.acento} />
+
+        {meta > 0 ? (
+          <>
+            <p className="text-sm font-medium uppercase tracking-wide text-white/55">
+              {restante >= 0 ? 'Te queda este mes' : 'Te pasaste de la meta'}
+            </p>
+            <p
+              className="text-5xl font-extrabold tabular-nums"
+              style={{ color: restante >= 0 ? 'var(--color-bien)' : 'var(--color-cuidado)' }}
+            >
+              {pesos(Math.abs(restante))}
+            </p>
+            <p className="text-sm text-white/50">
+              Meta {pesos(meta)} · Gastado {pesos(resumen.gastos)}
+            </p>
+          </>
+        ) : (
+          <>
+            <p className="text-sm font-medium uppercase tracking-wide text-white/55">
+              Balance de {m.nombre.toLowerCase()} este mes
+            </p>
+            <p
+              className="text-5xl font-extrabold tabular-nums"
+              style={{ color: resumen.balance >= 0 ? 'var(--color-bien)' : 'var(--color-cuidado)' }}
+            >
+              {pesos(resumen.balance)}
+            </p>
+            <button
+              onClick={onEditarMeta}
+              className="mt-1 flex items-center gap-1.5 rounded-full bg-white/10 px-4 py-2 text-sm font-semibold"
+            >
+              <Icono nombre="Target" size={16} /> Poner meta del mes
+            </button>
+          </>
+        )}
       </Glass>
 
       {/* Dos tarjetas: entró / salió */}
@@ -77,7 +124,7 @@ export function Inicio() {
         </Glass>
       </div>
 
-      {/* Movimientos recientes */}
+      {/* Movimientos recientes (tocables para corregir/borrar) */}
       <section className="flex flex-col gap-3">
         <h2 className="px-1 text-lg font-bold text-white/80">Últimos movimientos</h2>
         {recientes.length === 0 ? (
@@ -91,7 +138,11 @@ export function Inicio() {
               const cat = categoriaPorId(t.categoriaId);
               const ingreso = t.tipo === 'INGRESO';
               return (
-                <div key={t.id} className="flex items-center gap-3 px-4 py-3.5">
+                <button
+                  key={t.id}
+                  onClick={() => onMovimiento(t)}
+                  className="flex w-full items-center gap-3 px-4 py-3.5 text-left transition-colors active:bg-white/10"
+                >
                   <span
                     className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl"
                     style={{ background: m.suave }}
@@ -109,7 +160,7 @@ export function Inicio() {
                     {ingreso ? '+' : '−'}
                     {pesos(t.monto)}
                   </span>
-                </div>
+                </button>
               );
             })}
           </Glass>

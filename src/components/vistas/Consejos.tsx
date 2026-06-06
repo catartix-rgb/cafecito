@@ -7,6 +7,7 @@
 import { useMemo } from 'react';
 import { generarConsejos, type TipoConsejo } from '@/lib/analisis';
 import { useTransacciones } from '@/state/useTransacciones';
+import { usePresupuestos } from '@/state/usePresupuestos';
 import { Glass } from '../Glass';
 import { Icono } from '../Icono';
 
@@ -18,7 +19,11 @@ const COLOR_SEMAFORO: Record<TipoConsejo, string> = {
 
 export function Consejos() {
   const transacciones = useTransacciones();
-  const consejos = useMemo(() => generarConsejos(transacciones), [transacciones]);
+  const presupuestos = usePresupuestos();
+  const consejos = useMemo(
+    () => generarConsejos(transacciones, presupuestos),
+    [transacciones, presupuestos]
+  );
 
   return (
     <div className="mx-auto flex w-full max-w-md flex-col gap-5 px-5 pt-10 pb-40">

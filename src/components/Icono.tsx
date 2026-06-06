@@ -22,6 +22,8 @@ import {
   Delete,
   ArrowUpRight,
   ArrowDownRight,
+  Pencil,
+  Target,
   type LucideProps,
 } from 'lucide-react';
 import type { ComponentType } from 'react';
@@ -46,6 +48,8 @@ const MAPA: Record<string, ComponentType<LucideProps>> = {
   Delete,
   ArrowUpRight,
   ArrowDownRight,
+  Pencil,
+  Target,
 };
 
 export function Icono({ nombre, ...props }: { nombre: string } & LucideProps) {
