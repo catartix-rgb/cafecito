@@ -1,12 +1,12 @@
 'use client';
 
 /**
- * Switch Gigante "Dos Caras" — el control más importante de la app.
- * Dos mitades enormes (Mi casa / El negocio). La mitad activa se pinta
- * con el color de su modo; la otra queda apagada. Área de toque muy grande.
+ * Switch Gigante "Dos Caras" en estilo liquid glass. Dos mitades enormes
+ * (Mi casa / El negocio); la activa se ilumina con el acento del modo.
  */
 import { modos, type Modo } from '@/lib/theme';
 import { useModo } from '@/state/mode';
+import { Icono } from './Icono';
 
 export function SwitchDosCaras() {
   const { modo, setModo } = useModo();
@@ -15,41 +15,32 @@ export function SwitchDosCaras() {
     <div
       role="tablist"
       aria-label="Cambiar entre Mi casa y El negocio"
-      className="flex gap-1 rounded-full border-2 border-borde bg-blanco p-1 shadow-sm"
+      className="glass flex gap-1 rounded-full p-1.5"
     >
-      <MitadSwitch valor="PERSONAL" activo={modo === 'PERSONAL'} onSelect={() => setModo('PERSONAL')} />
-      <MitadSwitch valor="NEGOCIO" activo={modo === 'NEGOCIO'} onSelect={() => setModo('NEGOCIO')} />
+      <Mitad valor="PERSONAL" activo={modo === 'PERSONAL'} onSelect={() => setModo('PERSONAL')} />
+      <Mitad valor="NEGOCIO" activo={modo === 'NEGOCIO'} onSelect={() => setModo('NEGOCIO')} />
     </div>
   );
 }
 
-function MitadSwitch({
-  valor,
-  activo,
-  onSelect,
-}: {
-  valor: Modo;
-  activo: boolean;
-  onSelect: () => void;
-}) {
+function Mitad({ valor, activo, onSelect }: { valor: Modo; activo: boolean; onSelect: () => void }) {
   const m = modos[valor];
-
   return (
     <button
       type="button"
       role="tab"
       aria-selected={activo}
-      aria-label={m.nombre}
       onClick={onSelect}
-      className="flex flex-1 items-center justify-center gap-2 rounded-full py-4 text-xl font-extrabold transition-colors duration-200"
+      className="flex flex-1 items-center justify-center gap-2.5 rounded-full py-3.5 text-lg font-bold transition-all duration-300"
       style={{
-        backgroundColor: activo ? m.color : 'transparent',
-        color: activo ? m.contraste : 'var(--color-tinta-suave)',
-        minHeight: 64,
+        minHeight: 58,
+        background: activo ? m.acento : 'transparent',
+        color: activo ? '#1a120c' : 'rgba(255,255,255,0.72)',
+        boxShadow: activo ? `0 6px 20px ${m.suave}` : 'none',
       }}
     >
-      <span className="text-3xl leading-none">{m.icono}</span>
-      <span className="truncate">{m.nombre}</span>
+      <Icono nombre={m.icono} size={22} />
+      <span>{m.nombre}</span>
     </button>
   );
 }

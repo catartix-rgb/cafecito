@@ -1,5 +1,5 @@
-import { PantallaInicio } from '@/components/PantallaInicio';
+import { App } from '@/components/App';
 
 export default function Pagina() {
-  return <PantallaInicio />;
+  return <App />;
 }

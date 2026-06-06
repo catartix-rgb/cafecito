@@ -1,39 +1,61 @@
 @import "tailwindcss";
 
-/**
- * Tokens de diseño de Cafecito como tema de Tailwind v4.
- * Esto habilita utilidades como `bg-crema`, `text-tinta`, `border-borde`, etc.
- */
+/* Tokens de Cafecito como tema de Tailwind v4 (habilita utilidades de color). */
 @theme {
-  --color-crema: #fbf7f0;
-  --color-blanco: #ffffff;
-  --color-tinta: #2b2420;
-  --color-tinta-suave: #6b6157;
-  --color-borde: #e9e1d6;
-  --color-bien: #3e8e5a;
-  --color-ojo: #e0a100;
-  --color-cuidado: #d6452f;
-
+  --color-bien: #46c38a;
+  --color-ojo: #f0bf4c;
+  --color-cuidado: #ef7a63;
   --radius-suave: 16px;
-  --radius-grande: 24px;
+  --radius-grande: 28px;
 }
 
 html {
-  /* Mantenemos la app siempre en tono claro y cálido (no seguimos el modo oscuro
-     del sistema, porque la app tiene su propia identidad de color). */
-  color-scheme: light;
+  color-scheme: dark; /* la app vive sobre gradientes oscuros y elegantes */
 }
 
 body {
-  background: var(--color-crema);
-  color: var(--color-tinta);
-  /* Evita el resaltado azul al tocar botones en móvil. */
+  background: #1a120c; /* respaldo bajo el gradiente */
+  color: #ffffff;
   -webkit-tap-highlight-color: transparent;
+  /* Tipografía geométrica, grande y de alto contraste. */
+  letter-spacing: -0.01em;
 }
 
-/* Mejora la legibilidad y desactiva la selección accidental de texto en controles. */
 button {
   -webkit-user-select: none;
   user-select: none;
   touch-action: manipulation;
 }
+
+/**
+ * Superficie "liquid glass": vidrio esmerilado semitransparente.
+ * Incluye el prefijo -webkit- para Safari iOS (clave para móvil).
+ */
+.glass {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  backdrop-filter: blur(16px) saturate(140%);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+
+/* Variante más sólida para barras flotantes (nav inferior). */
+.glass-fuerte {
+  background: rgba(20, 14, 10, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  -webkit-backdrop-filter: blur(22px) saturate(150%);
+  backdrop-filter: blur(22px) saturate(150%);
+  box-shadow: 0 -6px 28px rgba(0, 0, 0, 0.3);
+}
+
+@keyframes aparecer {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.aparecer { animation: aparecer 0.28s ease-out both; }
+
+@keyframes subir {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+.subir { animation: subir 0.32s cubic-bezier(0.22, 1, 0.36, 1) both; }
