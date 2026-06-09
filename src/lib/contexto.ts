@@ -11,7 +11,8 @@ import { pesos, fechaCorta } from './format';
 
 export function construirContexto(
   transacciones: Transaccion[],
-  presupuestos: Presupuestos
+  presupuestos: Presupuestos,
+  ingresoFijo: number = 0
 ): string {
   const hoy = new Date().toLocaleDateString('es-MX', {
     weekday: 'long',
@@ -21,7 +22,11 @@ export function construirContexto(
   });
 
   if (transacciones.length === 0) {
-    return `Hoy es ${hoy}. La usuaria todavía no ha registrado ningún movimiento, así que aún no hay datos para analizar.`;
+    const sueldo =
+      ingresoFijo > 0
+        ? ` Tiene registrado un ingreso fijo del hogar de ${pesos(ingresoFijo)} al mes.`
+        : '';
+    return `Hoy es ${hoy}. La usuaria todavía no ha registrado movimientos, así que casi no hay datos.${sueldo}`;
   }
 
   const neg = resumenDelMes(transacciones, 'NEGOCIO');
@@ -41,10 +46,16 @@ export function construirContexto(
   lineas.push(`- Balance: ${pesos(neg.balance)}`);
   lineas.push(`- Meta de gasto del mes: ${metaNeg > 0 ? pesos(metaNeg) : 'no tiene meta puesta'}`);
   lineas.push('');
+  const casaIngresosTot = casa.ingresos + ingresoFijo;
+  const casaBalanceTot = casaIngresosTot - casa.gastos;
   lineas.push('CASA (personal) — este mes:');
-  lineas.push(`- Ingresos: ${pesos(casa.ingresos)}`);
+  lineas.push(
+    `- Ingreso fijo del hogar (sueldo/pensión que entra cada mes): ${ingresoFijo > 0 ? pesos(ingresoFijo) : 'no lo ha registrado'}`
+  );
+  lineas.push(`- Otros ingresos anotados este mes: ${pesos(casa.ingresos)}`);
+  lineas.push(`- Ingresos totales del mes (sueldo + otros): ${pesos(casaIngresosTot)}`);
   lineas.push(`- Gastos: ${pesos(casa.gastos)}`);
-  lineas.push(`- Balance: ${pesos(casa.balance)}`);
+  lineas.push(`- Balance (lo que entró menos lo que salió): ${pesos(casaBalanceTot)}`);
   lineas.push(`- Meta de gasto del mes: ${metaCasa > 0 ? pesos(metaCasa) : 'no tiene meta puesta'}`);
   lineas.push('');
   lineas.push(

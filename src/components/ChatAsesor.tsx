@@ -11,6 +11,7 @@ import { construirContexto } from '@/lib/contexto';
 import { useModo } from '@/state/mode';
 import { useTransacciones } from '@/state/useTransacciones';
 import { usePresupuestos } from '@/state/usePresupuestos';
+import { useIngresoFijo } from '@/state/useIngresoFijo';
 import { Icono } from './Icono';
 
 type Mensaje = { role: 'user' | 'assistant'; content: string };
@@ -27,6 +28,7 @@ export function ChatAsesor({ onClose }: { onClose: () => void }) {
   const m = modos[modo];
   const transacciones = useTransacciones();
   const presupuestos = usePresupuestos();
+  const ingresoFijo = useIngresoFijo();
 
   const [mensajes, setMensajes] = useState<Mensaje[]>([]);
   const [texto, setTexto] = useState('');
@@ -52,7 +54,7 @@ export function ChatAsesor({ onClose }: { onClose: () => void }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           messages: historial,
-          contexto: construirContexto(transacciones, presupuestos),
+          contexto: construirContexto(transacciones, presupuestos, ingresoFijo),
         }),
       });
 

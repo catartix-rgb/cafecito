@@ -27,6 +27,16 @@ export function SheetRegistro({ onClose }: { onClose: () => void }) {
   const pideBeneficiario = catSel?.pideBeneficiario ?? false;
   const listo = monto > 0 && catSel != null && (!pideBeneficiario || beneficiario != null);
 
+  // El botón explica qué falta, para que nunca quede "gris sin razón".
+  const textoGuardar =
+    monto === 0
+      ? 'Escribe el monto'
+      : catSel == null
+        ? 'Elige una categoría'
+        : pideBeneficiario && beneficiario == null
+          ? 'Elige a quién'
+          : 'Guardar';
+
   function elegirCategoria(id: string) {
     setCategoriaId(id);
     // Al cambiar de categoría, limpiamos el beneficiario para no etiquetar mal.
@@ -78,6 +88,7 @@ export function SheetRegistro({ onClose }: { onClose: () => void }) {
         </div>
 
         {/* Categorías */}
+        <p className="-mb-1 px-1 text-sm font-semibold text-white/70">¿Qué fue? Toca una opción</p>
         <div className="grid grid-cols-4 gap-2.5">
           {categorias.map((c) => {
             const activa = c.id === categoriaId;
@@ -130,14 +141,15 @@ export function SheetRegistro({ onClose }: { onClose: () => void }) {
         {/* Teclado */}
         <Teclado onTecla={teclear} />
 
-        {/* Guardar */}
+        {/* Guardar (el texto dice qué falta si aún no se puede) */}
         <button
           onClick={guardar}
           disabled={!listo}
-          className="flex min-h-[64px] items-center justify-center gap-2 rounded-full text-xl font-extrabold transition-all disabled:opacity-40"
+          className="flex min-h-[64px] items-center justify-center gap-2 rounded-full text-xl font-extrabold transition-all disabled:opacity-50"
           style={{ background: m.acento, color: '#1a120c' }}
         >
-          <Icono nombre="Check" size={24} /> Guardar
+          {listo && <Icono nombre="Check" size={24} />}
+          {textoGuardar}
         </button>
       </div>
 

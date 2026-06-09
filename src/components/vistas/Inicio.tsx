@@ -12,6 +12,7 @@ import { pesos, fechaCorta } from '@/lib/format';
 import { useModo } from '@/state/mode';
 import { useTransacciones } from '@/state/useTransacciones';
 import { usePresupuestos } from '@/state/usePresupuestos';
+import { useIngresoFijo } from '@/state/useIngresoFijo';
 import { SwitchDosCaras } from '../SwitchDosCaras';
 import { TazaGauge } from '../TazaGauge';
 import { Glass } from '../Glass';
@@ -19,14 +20,17 @@ import { Icono } from '../Icono';
 
 export function Inicio({
   onEditarMeta,
+  onEditarSueldo,
   onMovimiento,
 }: {
   onEditarMeta: () => void;
+  onEditarSueldo: () => void;
   onMovimiento: (t: Transaccion) => void;
 }) {
   const { modo } = useModo();
   const transacciones = useTransacciones();
   const presupuestos = usePresupuestos();
+  const ingresoFijo = useIngresoFijo();
   const m = modos[modo];
 
   const resumen = useMemo(() => resumenDelMes(transacciones, modo), [transacciones, modo]);
@@ -34,6 +38,11 @@ export function Inicio({
     () => transacciones.filter((t) => t.modo === modo).slice(0, 5),
     [transacciones, modo]
   );
+
+  // El ingreso fijo del hogar solo aplica a "Casa" (PERSONAL) y se suma a lo que entró.
+  const fijoAplicable = modo === 'PERSONAL' ? ingresoFijo : 0;
+  const ingresosTot = resumen.ingresos + fijoAplicable;
+  const balanceTot = ingresosTot - resumen.gastos;
 
   const meta = presupuestos[modo] ?? 0;
   const restante = meta - resumen.gastos;
@@ -43,8 +52,8 @@ export function Inicio({
   const pct =
     meta > 0
       ? Math.max(0, Math.min(1, restante / meta))
-      : resumen.ingresos > 0
-        ? resumen.gastos / resumen.ingresos
+      : ingresosTot > 0
+        ? resumen.gastos / ingresosTot
         : resumen.gastos > 0
           ? 1
           : 0;
@@ -92,9 +101,9 @@ export function Inicio({
             </p>
             <p
               className="text-5xl font-extrabold tabular-nums"
-              style={{ color: resumen.balance >= 0 ? 'var(--color-bien)' : 'var(--color-cuidado)' }}
+              style={{ color: balanceTot >= 0 ? 'var(--color-bien)' : 'var(--color-cuidado)' }}
             >
-              {pesos(resumen.balance)}
+              {pesos(balanceTot)}
             </p>
             <button
               onClick={onEditarMeta}
@@ -113,7 +122,7 @@ export function Inicio({
             <Icono nombre="ArrowUpRight" size={16} /> Entró
           </span>
           <span className="text-2xl font-bold tabular-nums" style={{ color: 'var(--color-bien)' }}>
-            {pesos(resumen.ingresos)}
+            {pesos(ingresosTot)}
           </span>
         </Glass>
         <Glass className="flex flex-col gap-1 p-4">
@@ -123,6 +132,41 @@ export function Inicio({
           <span className="text-2xl font-bold tabular-nums">{pesos(resumen.gastos)}</span>
         </Glass>
       </div>
+
+      {/* Ingreso fijo del hogar (solo en Casa) */}
+      {modo === 'PERSONAL' &&
+        (ingresoFijo > 0 ? (
+          <Glass className="flex items-center gap-3 p-4">
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl" style={{ background: m.suave }}>
+              <Icono nombre="Wallet" size={20} />
+            </span>
+            <div className="flex-1">
+              <p className="font-semibold">Ingreso del hogar</p>
+              <p className="text-sm text-white/55">{pesos(ingresoFijo)} cada mes · ya incluido arriba</p>
+            </div>
+            <button
+              aria-label="Editar ingreso del hogar"
+              onClick={onEditarSueldo}
+              className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10"
+            >
+              <Icono nombre="Pencil" size={18} />
+            </button>
+          </Glass>
+        ) : (
+          <button
+            onClick={onEditarSueldo}
+            className="glass flex items-center gap-3 rounded-3xl p-4 text-left transition-transform active:scale-[0.99]"
+          >
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white/10">
+              <Icono nombre="Wallet" size={20} />
+            </span>
+            <div className="flex-1">
+              <p className="font-semibold">Agregar ingreso del hogar</p>
+              <p className="text-sm text-white/55">Tu sueldo o lo que entra fijo cada mes</p>
+            </div>
+            <Icono nombre="Plus" size={20} />
+          </button>
+        ))}
 
       {/* Movimientos recientes (tocables para corregir/borrar) */}
       <section className="flex flex-col gap-3">
