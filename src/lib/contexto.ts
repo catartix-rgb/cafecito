@@ -6,7 +6,15 @@
 import type { Transaccion } from './store';
 import { categoriaPorId } from './store';
 import type { Presupuestos } from './presupuestos';
-import { resumenDelMes, gastoHormigaSemana, apoyoPorHijo, PRECIO_COSTAL } from './analisis';
+import {
+  resumenDelMes,
+  gastoHormigaSemana,
+  apoyoPorHijo,
+  distribucionGastos,
+  comparacionMensual,
+  gastosInusuales,
+  PRECIO_COSTAL,
+} from './analisis';
 import { pesos, fechaCorta } from './format';
 
 export function construirContexto(
@@ -63,6 +71,44 @@ export function construirContexto(
       (hormiga > 0 ? ` (equivale a ${costales <= 1 ? 'un costal' : costales + ' costales'} de café, a ${pesos(PRECIO_COSTAL)} cada uno).` : '.')
   );
   lineas.push('');
+
+  // ¿En qué se fue el dinero de la casa? (distribución por categoría)
+  const dist = distribucionGastos(transacciones, 'PERSONAL');
+  if (dist.total > 0) {
+    lineas.push('EN QUÉ SE FUE EL DINERO DE LA CASA (este mes, % del gasto total):');
+    for (const s of dist.slices) {
+      lineas.push(`- ${s.nombre}: ${pesos(s.total)} (${Math.round(s.pct * 100)}%)`);
+    }
+    lineas.push('');
+  }
+
+  // Comparación con el mes pasado (Casa)
+  const comp = comparacionMensual(transacciones, 'PERSONAL', ingresoFijo);
+  if (comp.hayMesPasado) {
+    lineas.push('COMPARADO CON EL MES PASADO (Casa):');
+    lineas.push(`- Gasto total: ${pesos(comp.gastosEste)} este mes vs ${pesos(comp.gastosPasado)} el mes pasado.`);
+    lineas.push(`- Ahorro: ${pesos(comp.ahorroEste)} este mes vs ${pesos(comp.ahorroPasado)} el mes pasado.`);
+    for (const c of comp.cambios) {
+      if (c.dir === 'igual') continue;
+      if (c.dir === 'nuevo') {
+        lineas.push(`- ${c.nombre}: nuevo este mes (${pesos(c.esteMes)}).`);
+      } else {
+        const pct = Math.round((c.pct ?? 0) * 100);
+        lineas.push(`- ${c.nombre}: ${pct > 0 ? '+' : ''}${pct}% (${pesos(c.mesPasado)} → ${pesos(c.esteMes)}).`);
+      }
+    }
+    lineas.push('');
+  }
+
+  // Gastos inusuales (Casa)
+  const inusuales = gastosInusuales(transacciones, 'PERSONAL');
+  if (inusuales.length > 0) {
+    lineas.push('GASTOS INUSUALES DE LA CASA (muy por encima del promedio de su categoría):');
+    for (const a of inusuales) {
+      lineas.push(`- ${pesos(a.monto)} en ${a.nombre} (su promedio es ~${pesos(a.promedio)}).`);
+    }
+    lineas.push('');
+  }
 
   // Apoyo familiar a los hijos (Pablo / Alex)
   const apoyoMes = apoyoPorHijo(transacciones, 'mes');

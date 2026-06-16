@@ -17,6 +17,10 @@ import { SwitchDosCaras } from '../SwitchDosCaras';
 import { TazaGauge } from '../TazaGauge';
 import { Glass } from '../Glass';
 import { Icono } from '../Icono';
+import { Semaforo } from '../analisis/Semaforo';
+import { Distribucion } from '../analisis/Distribucion';
+import { Comparacion } from '../analisis/Comparacion';
+import { AlertasInusuales } from '../analisis/AlertasInusuales';
 
 export function Inicio({
   onEditarMeta,
@@ -66,6 +70,9 @@ export function Inicio({
       </header>
 
       <SwitchDosCaras />
+
+      {/* Semáforo financiero (tócalo para saber por qué) */}
+      <Semaforo />
 
       {/* Hero: la taza + meta o balance del mes */}
       <Glass className="relative flex flex-col items-center gap-2 p-6 text-center aparecer">
@@ -167,6 +174,15 @@ export function Inicio({
             <Icono nombre="Plus" size={20} />
           </button>
         ))}
+
+      {/* Alertas de gastos inusuales (si hay) */}
+      <AlertasInusuales />
+
+      {/* ¿En qué se fue tu dinero? */}
+      <Distribucion />
+
+      {/* Comparado con el mes pasado */}
+      <Comparacion />
 
       {/* Movimientos recientes (tocables para corregir/borrar) */}
       <section className="flex flex-col gap-3">

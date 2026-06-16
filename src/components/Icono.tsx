@@ -30,6 +30,9 @@ import {
   MessageCircle,
   HandCoins,
   User,
+  TriangleAlert,
+  ChevronDown,
+  PiggyBank,
   type LucideProps,
 } from 'lucide-react';
 import type { ComponentType } from 'react';
@@ -62,6 +65,9 @@ const MAPA: Record<string, ComponentType<LucideProps>> = {
   MessageCircle,
   HandCoins,
   User,
+  TriangleAlert,
+  ChevronDown,
+  PiggyBank,
 };
 
 export function Icono({ nombre, ...props }: { nombre: string } & LucideProps) {
