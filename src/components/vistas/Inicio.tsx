@@ -22,6 +22,7 @@ import { Semaforo } from '../analisis/Semaforo';
 import { Distribucion } from '../analisis/Distribucion';
 import { Comparacion } from '../analisis/Comparacion';
 import { AlertasInusuales } from '../analisis/AlertasInusuales';
+import { MetasAhorro } from '../MetasAhorro';
 
 export function Inicio({
   onEditarMeta,
@@ -190,6 +191,9 @@ export function Inicio({
 
       {/* Comparado con el mes pasado */}
       <Comparacion />
+
+      {/* Metas de ahorro (solo en Casa) */}
+      {modo === 'PERSONAL' && <MetasAhorro />}
 
       {/* Movimientos recientes (tocables para corregir/borrar) */}
       <section className="flex flex-col gap-3">

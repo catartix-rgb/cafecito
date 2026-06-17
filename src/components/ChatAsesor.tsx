@@ -12,6 +12,7 @@ import { useModo } from '@/state/mode';
 import { useTransacciones } from '@/state/useTransacciones';
 import { usePresupuestos } from '@/state/usePresupuestos';
 import { useIngresoFijo } from '@/state/useIngresoFijo';
+import { useMetas } from '@/state/useMetas';
 import { Icono } from './Icono';
 
 type Mensaje = { role: 'user' | 'assistant'; content: string };
@@ -29,6 +30,7 @@ export function ChatAsesor({ onClose }: { onClose: () => void }) {
   const transacciones = useTransacciones();
   const presupuestos = usePresupuestos();
   const ingresoFijo = useIngresoFijo();
+  const metas = useMetas();
 
   const [mensajes, setMensajes] = useState<Mensaje[]>([]);
   const [texto, setTexto] = useState('');
@@ -54,7 +56,7 @@ export function ChatAsesor({ onClose }: { onClose: () => void }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           messages: historial,
-          contexto: construirContexto(transacciones, presupuestos, ingresoFijo),
+          contexto: construirContexto(transacciones, presupuestos, ingresoFijo, metas),
         }),
       });
 

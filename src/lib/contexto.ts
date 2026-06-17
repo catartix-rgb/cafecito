@@ -6,6 +6,7 @@
 import type { Transaccion } from './store';
 import { categoriaPorId } from './store';
 import type { Presupuestos } from './presupuestos';
+import type { Meta } from './metas';
 import {
   resumenDelMes,
   gastoHormigaSemana,
@@ -21,7 +22,8 @@ import { pesos, fechaCorta } from './format';
 export function construirContexto(
   transacciones: Transaccion[],
   presupuestos: Presupuestos,
-  ingresoFijo: number = 0
+  ingresoFijo: number = 0,
+  metas: Meta[] = []
 ): string {
   const hoy = new Date().toLocaleDateString('es-MX', {
     weekday: 'long',
@@ -120,6 +122,17 @@ export function construirContexto(
     lineas.push('GASTOS INUSUALES DE LA CASA (muy por encima del promedio de su categoría):');
     for (const a of inusuales) {
       lineas.push(`- ${pesos(a.monto)} en ${a.nombre} (su promedio es ~${pesos(a.promedio)}).`);
+    }
+    lineas.push('');
+  }
+
+  // Metas de ahorro
+  if (metas.length > 0) {
+    lineas.push('METAS DE AHORRO:');
+    for (const meta of metas) {
+      const pct = meta.objetivo > 0 ? Math.round((meta.ahorrado / meta.objetivo) * 100) : 0;
+      const falta = Math.max(0, meta.objetivo - meta.ahorrado);
+      lineas.push(`- ${meta.nombre}: lleva ${pesos(meta.ahorrado)} de ${pesos(meta.objetivo)} (${pct}%, le falta ${pesos(falta)}).`);
     }
     lineas.push('');
   }
