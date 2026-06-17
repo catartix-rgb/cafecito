@@ -3,6 +3,7 @@ import { Geist } from 'next/font/google';
 import './globals.css';
 import { ProveedorModo } from '@/state/mode';
 import { RegistroSW } from '@/components/RegistroSW';
+import { GlassFilters } from '@/components/GlassFilters';
 import { COLOR_FONDO } from '@/lib/theme';
 
 const geist = Geist({ subsets: ['latin'] });
@@ -29,6 +30,7 @@ export default function LayoutRaiz({ children }: { children: React.ReactNode }) 
   return (
     <html lang="es" className={`${geist.className} h-full antialiased`}>
       <body className="min-h-full">
+        <GlassFilters />
         <ProveedorModo>{children}</ProveedorModo>
         <RegistroSW />
       </body>

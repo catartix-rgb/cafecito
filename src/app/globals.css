@@ -28,24 +28,82 @@ button {
 }
 
 /**
- * Superficie "liquid glass": vidrio esmerilado semitransparente.
- * Incluye el prefijo -webkit- para Safari iOS (clave para móvil).
+ * Superficie "liquid glass": vidrio con refracción óptica real.
+ * - Base (todos los navegadores): blur + saturación + brillos/bordes que dan
+ *   iluminación y espesor de cristal físico.
+ * - Mejora progresiva (@supports, más abajo): refracción del fondo con un filtro
+ *   SVG (feDisplacementMap) donde el navegador lo soporta. Incluye -webkit- (iOS).
+ * El contenido del frente NO se distorsiona (solo se refracta lo que está detrás),
+ * por eso la legibilidad se mantiene intacta.
  */
-.glass {
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  -webkit-backdrop-filter: blur(16px) saturate(140%);
-  backdrop-filter: blur(16px) saturate(140%);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+.glass,
+.glass-fuerte {
+  position: relative;
+  isolation: isolate;
 }
 
-/* Variante más sólida para barras flotantes (nav inferior). */
+.glass {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.14),
+    rgba(255, 255, 255, 0.04) 48%,
+    rgba(255, 255, 255, 0.09)
+  );
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  -webkit-backdrop-filter: blur(14px) saturate(180%) brightness(1.06);
+  backdrop-filter: blur(14px) saturate(180%) brightness(1.06);
+  /* Profundidad (sombra externa) + espesor de cristal (luz arriba, sombra abajo). */
+  box-shadow:
+    0 10px 34px rgba(0, 0, 0, 0.3),
+    0 2px 6px rgba(0, 0, 0, 0.16),
+    inset 0 1px 1px rgba(255, 255, 255, 0.5),
+    inset 0 -1px 1px rgba(0, 0, 0, 0.18);
+}
+
+/* Variante más sólida para barras y hojas (nav inferior, sheets). */
 .glass-fuerte {
-  background: rgba(20, 14, 10, 0.55);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  -webkit-backdrop-filter: blur(22px) saturate(150%);
-  backdrop-filter: blur(22px) saturate(150%);
-  box-shadow: 0 -6px 28px rgba(0, 0, 0, 0.3);
+  background: linear-gradient(135deg, rgba(42, 30, 22, 0.62), rgba(14, 10, 7, 0.6));
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  -webkit-backdrop-filter: blur(20px) saturate(170%) brightness(1.04);
+  backdrop-filter: blur(20px) saturate(170%) brightness(1.04);
+  box-shadow:
+    0 -6px 28px rgba(0, 0, 0, 0.34),
+    inset 0 1px 1px rgba(255, 255, 255, 0.42),
+    inset 0 -1px 1px rgba(0, 0, 0, 0.22);
+}
+
+/* Reflejo/sheen de cristal: highlight diagonal sutil en las esquinas (no sobre el
+   centro, para no velar el texto). pointer-events:none deja pasar los toques. */
+.glass::after,
+.glass-fuerte::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.3) 0%,
+    rgba(255, 255, 255, 0.06) 20%,
+    rgba(255, 255, 255, 0) 44%,
+    rgba(255, 255, 255, 0) 68%,
+    rgba(255, 255, 255, 0.1) 100%
+  );
+  opacity: 0.65;
+  z-index: -1;
+}
+
+/* Refracción real del fondo donde el navegador soporta filtros SVG en backdrop
+   (Chrome/Android, Firefox). En iOS Safari se queda el glass base de arriba. */
+@supports ((-webkit-backdrop-filter: url("#x")) or (backdrop-filter: url("#x"))) {
+  .glass {
+    -webkit-backdrop-filter: url(#liquid-glass) blur(5px) saturate(180%) brightness(1.06);
+    backdrop-filter: url(#liquid-glass) blur(5px) saturate(180%) brightness(1.06);
+  }
+  .glass-fuerte {
+    -webkit-backdrop-filter: url(#liquid-glass) blur(9px) saturate(170%) brightness(1.04);
+    backdrop-filter: url(#liquid-glass) blur(9px) saturate(170%) brightness(1.04);
+  }
 }
 
 @keyframes aparecer {
