@@ -98,11 +98,20 @@ export function ChatAsesor({ onClose }: { onClose: () => void }) {
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col">
-      <button aria-label="Cerrar" onClick={onClose} className="absolute inset-0 bg-black/40" />
+      <button aria-label="Cerrar" onClick={onClose} className="absolute inset-0 bg-black/70" />
 
-      <div className="relative mx-auto flex h-full w-full max-w-md flex-col">
+      {/* El chat es una superficie oscura frosted cohesiva: legible en iOS aunque
+          no haya refracción, sin que el contenido de atrás compita con el texto. */}
+      <div
+        className="relative mx-auto flex h-full w-full max-w-md flex-col"
+        style={{
+          background: 'rgba(16, 11, 8, 0.82)',
+          backdropFilter: 'blur(24px) saturate(140%)',
+          WebkitBackdropFilter: 'blur(24px) saturate(140%)',
+        }}
+      >
         {/* Encabezado */}
-        <header className="glass-fuerte flex items-center gap-3 px-5 pb-4 pt-[max(16px,env(safe-area-inset-top))]">
+        <header className="flex items-center gap-3 border-b border-white/10 px-5 pb-4 pt-[max(16px,env(safe-area-inset-top))]">
           <span
             className="flex h-11 w-11 items-center justify-center rounded-2xl"
             style={{ background: m.acento, color: '#1a120c' }}
@@ -184,7 +193,7 @@ export function ChatAsesor({ onClose }: { onClose: () => void }) {
             e.preventDefault();
             enviar(texto);
           }}
-          className="glass-fuerte flex items-center gap-2 px-4 pb-[max(16px,env(safe-area-inset-bottom))] pt-3"
+          className="flex items-center gap-2 border-t border-white/10 px-4 pb-[max(16px,env(safe-area-inset-bottom))] pt-3"
         >
           <input
             value={texto}
