@@ -38,6 +38,15 @@ function mismoMes(iso: string, ref: Date): boolean {
   return d.getMonth() === ref.getMonth() && d.getFullYear() === ref.getFullYear();
 }
 
+function mismoDia(iso: string, ref: Date): boolean {
+  const d = new Date(iso);
+  return (
+    d.getDate() === ref.getDate() &&
+    d.getMonth() === ref.getMonth() &&
+    d.getFullYear() === ref.getFullYear()
+  );
+}
+
 /** Resumen de ingresos/gastos/balance del mes actual para un modo. */
 export function resumenDelMes(transacciones: Transaccion[], modo: Modo): Resumen {
   const hoy = new Date();
@@ -400,4 +409,39 @@ export function gastosInusuales(tx: Transaccion[], modo: Modo): GastoInusual[] {
     }
   }
   return alertas.sort((a, b) => b.monto - a.monto).slice(0, 3);
+}
+
+// ===========================================================================
+// Tienda: resumen por periodo (día/semana/mes) y dinero invertido en mercancía.
+// ===========================================================================
+
+export type Periodo = 'dia' | 'semana' | 'mes';
+
+/** Resumen de ingresos/gastos/ganancia de un modo en el periodo dado. */
+export function resumenPeriodo(transacciones: Transaccion[], modo: Modo, periodo: Periodo): Resumen {
+  const hoy = new Date();
+  const dentro = (iso: string) =>
+    periodo === 'dia' ? mismoDia(iso, hoy) : periodo === 'semana' ? mismaSemana(iso, hoy) : mismoMes(iso, hoy);
+  let ingresos = 0;
+  let gastos = 0;
+  for (const t of transacciones) {
+    if (t.modo !== modo || !dentro(t.fecha)) continue;
+    if (t.tipo === 'INGRESO') ingresos += t.monto;
+    else gastos += t.monto;
+  }
+  return { ingresos, gastos, balance: ingresos - gastos };
+}
+
+/**
+ * Dinero invertido en mercancía/inventario: suma histórica de las compras
+ * marcadas como inventario en ese modo. Es una estimación simple del dinero
+ * que la usuaria ha puesto en stock (no descuenta lo ya vendido).
+ */
+export function invertidoEnInventario(transacciones: Transaccion[], modo: Modo): number {
+  let total = 0;
+  for (const t of transacciones) {
+    if (t.modo !== modo || t.tipo !== 'GASTO') continue;
+    if (categoriaPorId(t.categoriaId)?.esInventario) total += t.monto;
+  }
+  return total;
 }

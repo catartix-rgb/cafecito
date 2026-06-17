@@ -15,6 +15,7 @@ import { usePresupuestos } from '@/state/usePresupuestos';
 import { useIngresoFijo } from '@/state/useIngresoFijo';
 import { SwitchDosCaras } from '../SwitchDosCaras';
 import { TazaGauge } from '../TazaGauge';
+import { TiendaResumen } from './TiendaResumen';
 import { Glass } from '../Glass';
 import { Icono } from '../Icono';
 import { Semaforo } from '../analisis/Semaforo';
@@ -74,6 +75,10 @@ export function Inicio({
       {/* Semáforo financiero (tócalo para saber por qué) */}
       <Semaforo />
 
+      {modo === 'TIENDA' ? (
+        <TiendaResumen />
+      ) : (
+        <>
       {/* Hero: la taza + meta o balance del mes */}
       <Glass className="relative flex flex-col items-center gap-2 p-6 text-center aparecer">
         <button
@@ -174,6 +179,8 @@ export function Inicio({
             <Icono nombre="Plus" size={20} />
           </button>
         ))}
+        </>
+      )}
 
       {/* Alertas de gastos inusuales (si hay) */}
       <AlertasInusuales />

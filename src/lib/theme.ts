@@ -6,7 +6,10 @@
  * el que flotan las tarjetas de vidrio esmerilado (glassmorphism).
  */
 
-export type Modo = 'PERSONAL' | 'NEGOCIO';
+export type Modo = 'PERSONAL' | 'NEGOCIO' | 'TIENDA';
+
+/** Orden en que se muestran los modos en el selector. */
+export const ORDEN_MODOS: Modo[] = ['PERSONAL', 'NEGOCIO', 'TIENDA'];
 
 /** Nombres de íconos de lucide-react (se resuelven en <Icono/>). */
 export type NombreIcono = string;
@@ -15,6 +18,7 @@ export const modos: Record<
   Modo,
   {
     nombre: string;
+    corto: string; // etiqueta corta para el selector de 3 caras
     icono: NombreIcono; // ícono Lucide del modo
     acento: string; // color de acento sólido (botones, énfasis)
     suave: string; // versión translúcida del acento
@@ -25,6 +29,7 @@ export const modos: Record<
 > = {
   PERSONAL: {
     nombre: 'Mi casa',
+    corto: 'Casa',
     icono: 'House',
     acento: '#34D6B4',
     suave: 'rgba(52, 214, 180, 0.18)',
@@ -37,6 +42,7 @@ export const modos: Record<
   },
   NEGOCIO: {
     nombre: 'El negocio',
+    corto: 'Negocio',
     icono: 'Coffee',
     acento: '#E8A55C',
     suave: 'rgba(232, 165, 92, 0.18)',
@@ -46,6 +52,19 @@ export const modos: Record<
       'radial-gradient(120% 120% at 80% 100%, #3a271b 0%, transparent 55%),' +
       'linear-gradient(160deg, #6b4a33 0%, #2a1c13 100%)',
     descripcion: 'Ventas, insumos y servicios del café.',
+  },
+  TIENDA: {
+    nombre: 'La tienda',
+    corto: 'Tienda',
+    icono: 'Store',
+    acento: '#7C9CF5',
+    suave: 'rgba(124, 156, 245, 0.18)',
+    gradiente:
+      'radial-gradient(120% 90% at 15% 12%, #4a63b5 0%, transparent 55%),' +
+      'radial-gradient(100% 80% at 85% 0%, #5f7fd6 0%, transparent 50%),' +
+      'radial-gradient(120% 120% at 80% 100%, #1e2a52 0%, transparent 55%),' +
+      'linear-gradient(160deg, #344a8f 0%, #161d38 100%)',
+    descripcion: 'Ventas, mercancía y gastos de la tienda.',
   },
 };
 

@@ -33,6 +33,8 @@ import {
   TriangleAlert,
   ChevronDown,
   PiggyBank,
+  Tag,
+  Receipt,
   type LucideProps,
 } from 'lucide-react';
 import type { ComponentType } from 'react';
@@ -68,6 +70,8 @@ const MAPA: Record<string, ComponentType<LucideProps>> = {
   TriangleAlert,
   ChevronDown,
   PiggyBank,
+  Tag,
+  Receipt,
 };
 
 export function Icono({ nombre, ...props }: { nombre: string } & LucideProps) {

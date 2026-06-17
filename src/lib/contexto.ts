@@ -13,6 +13,7 @@ import {
   distribucionGastos,
   comparacionMensual,
   gastosInusuales,
+  invertidoEnInventario,
   PRECIO_COSTAL,
 } from './analisis';
 import { pesos, fechaCorta } from './format';
@@ -54,6 +55,19 @@ export function construirContexto(
   lineas.push(`- Balance: ${pesos(neg.balance)}`);
   lineas.push(`- Meta de gasto del mes: ${metaNeg > 0 ? pesos(metaNeg) : 'no tiene meta puesta'}`);
   lineas.push('');
+
+  // TIENDA (solo si tiene movimientos)
+  const tienda = resumenDelMes(transacciones, 'TIENDA');
+  const invTienda = invertidoEnInventario(transacciones, 'TIENDA');
+  if (tienda.ingresos > 0 || tienda.gastos > 0 || invTienda > 0) {
+    lineas.push('TIENDA (negocio aparte) — este mes:');
+    lineas.push(`- Ventas (entró): ${pesos(tienda.ingresos)}`);
+    lineas.push(`- Gastos (salió): ${pesos(tienda.gastos)}`);
+    lineas.push(`- Ganancia estimada: ${pesos(tienda.balance)}`);
+    lineas.push(`- Dinero invertido en mercancía (histórico): ${pesos(invTienda)}`);
+    lineas.push('');
+  }
+
   const casaIngresosTot = casa.ingresos + ingresoFijo;
   const casaBalanceTot = casaIngresosTot - casa.gastos;
   lineas.push('CASA (personal) — este mes:');

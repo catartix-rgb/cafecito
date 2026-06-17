@@ -30,7 +30,7 @@ export function ProveedorModo({ children }: { children: ReactNode }) {
   // Al montar, recuperamos el último modo usado.
   useEffect(() => {
     const guardado = window.localStorage.getItem(CLAVE_GUARDADO);
-    if (guardado === 'PERSONAL' || guardado === 'NEGOCIO') {
+    if (guardado === 'PERSONAL' || guardado === 'NEGOCIO' || guardado === 'TIENDA') {
       setModoState(guardado);
     }
   }, []);
@@ -41,7 +41,8 @@ export function ProveedorModo({ children }: { children: ReactNode }) {
   }, []);
 
   const alternar = useCallback(() => {
-    setModo(modo === 'NEGOCIO' ? 'PERSONAL' : 'NEGOCIO');
+    // Cicla entre las tres caras.
+    setModo(modo === 'PERSONAL' ? 'NEGOCIO' : modo === 'NEGOCIO' ? 'TIENDA' : 'PERSONAL');
   }, [modo, setModo]);
 
   const valor = useMemo(() => ({ modo, setModo, alternar }), [modo, setModo, alternar]);

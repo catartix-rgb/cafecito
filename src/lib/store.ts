@@ -17,6 +17,7 @@ export type Categoria = {
   icono: string; // nombre de ícono Lucide
   esHormiga?: boolean; // "gasto hormiga"/antojo (para el Contador Virtual)
   pideBeneficiario?: boolean; // si true, el registro pregunta para quién (ej. hijos)
+  esInventario?: boolean; // compra de mercancía/inventario (para "dinero invertido")
 };
 
 export type Transaccion = {
@@ -46,6 +47,10 @@ export const CATEGORIAS: Categoria[] = [
   { id: 'salidas', nombre: 'Salidas', modo: 'PERSONAL', tipo: 'GASTO', icono: 'Utensils' },
   { id: 'apoyo', nombre: 'Hijos', modo: 'PERSONAL', tipo: 'GASTO', icono: 'HandCoins', pideBeneficiario: true },
   { id: 'ingreso', nombre: 'Ingreso', modo: 'PERSONAL', tipo: 'INGRESO', icono: 'Wallet' },
+  // TIENDA
+  { id: 'venta-tienda', nombre: 'Venta', modo: 'TIENDA', tipo: 'INGRESO', icono: 'Tag' },
+  { id: 'mercancia', nombre: 'Mercancía', modo: 'TIENDA', tipo: 'GASTO', icono: 'Package', esInventario: true },
+  { id: 'gasto-tienda', nombre: 'Gastos', modo: 'TIENDA', tipo: 'GASTO', icono: 'Receipt' },
 ];
 
 export function categoriasDe(modo: Modo): Categoria[] {
