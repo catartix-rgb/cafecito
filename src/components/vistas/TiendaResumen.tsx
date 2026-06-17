@@ -29,16 +29,30 @@ export function TiendaResumen() {
 
   return (
     <div className="flex flex-col gap-4">
-      {/* Toggle de periodo */}
-      <div className="glass flex gap-1 rounded-full p-1">
+      {/* Toggle de periodo con indicador líquido deslizante */}
+      <div className="glass relative flex rounded-full p-1">
+        <span
+          aria-hidden
+          className="absolute bottom-1 top-1 rounded-full"
+          style={{
+            left: 4,
+            width: `calc((100% - 8px) / ${PERIODOS.length})`,
+            transform: `translateX(${PERIODOS.findIndex((p) => p.id === periodo) * 100}%)`,
+            background: m.acento,
+            boxShadow: `0 4px 16px ${m.suave}`,
+            transition: 'transform 0.5s var(--ease-resorte)',
+            willChange: 'transform',
+            zIndex: 0,
+          }}
+        />
         {PERIODOS.map((p) => {
           const activo = p.id === periodo;
           return (
             <button
               key={p.id}
               onClick={() => setPeriodo(p.id)}
-              className="flex-1 rounded-full py-2.5 text-sm font-bold transition-all"
-              style={{ background: activo ? m.acento : 'transparent', color: activo ? '#1a120c' : 'rgba(255,255,255,0.7)' }}
+              className="relative z-10 flex-1 rounded-full py-2.5 text-sm font-bold"
+              style={{ color: activo ? '#1a120c' : 'rgba(255,255,255,0.7)', transition: 'color 0.4s var(--ease-suave)' }}
             >
               {p.etiqueta}
             </button>

@@ -10,6 +10,7 @@ import { useTransacciones } from '@/state/useTransacciones';
 import { usePresupuestos } from '@/state/usePresupuestos';
 import { Glass } from '../Glass';
 import { Icono } from '../Icono';
+import { ResumenMensual } from '../ResumenMensual';
 
 const COLOR_SEMAFORO: Record<TipoConsejo, string> = {
   BIEN: 'var(--color-bien)',
@@ -51,6 +52,9 @@ export function Consejos({ onAbrirAsesor }: { onAbrirAsesor: () => void }) {
         </div>
         <Icono nombre="Send" size={20} />
       </button>
+
+      {/* Resumen mensual automático (todas las caras) */}
+      <ResumenMensual />
 
       <div className="flex flex-col gap-4">
         {consejos.map((c) => (

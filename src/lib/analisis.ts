@@ -445,3 +445,118 @@ export function invertidoEnInventario(transacciones: Transaccion[], modo: Modo):
   }
   return total;
 }
+
+// ===========================================================================
+// Resumen mensual automático: totales por modo + tendencias contra el mes
+// pasado. Se calcula sobre los datos ya registrados, así que se "actualiza
+// solo" cada mes (siempre mira el mes en curso).
+// ===========================================================================
+
+export type ResumenModoMes = {
+  ingresos: number;
+  gastos: number;
+  balance: number;
+  /** Solo TIENDA: cuánto se metió en mercancía este mes. */
+  inventarioMes?: number;
+};
+
+export type Tendencia = { texto: string; tipo: TipoConsejo };
+
+export type ResumenMensual = {
+  mesNombre: string;
+  hayDatos: boolean;
+  porModo: Record<Modo, ResumenModoMes>;
+  tendencias: Tendencia[];
+};
+
+function inventarioDelMes(tx: Transaccion[], modo: Modo, ref: Date): number {
+  let total = 0;
+  for (const t of tx) {
+    if (t.modo !== modo || t.tipo !== 'GASTO' || !mismoMes(t.fecha, ref)) continue;
+    if (categoriaPorId(t.categoriaId)?.esInventario) total += t.monto;
+  }
+  return total;
+}
+
+function pctCambio(actual: number, previo: number): number | null {
+  return previo > 0 ? Math.round(((actual - previo) / previo) * 100) : null;
+}
+
+export function resumenMensual(transacciones: Transaccion[], ingresoFijo = 0): ResumenMensual {
+  const hoy = new Date();
+  const mesNombre = hoy.toLocaleDateString('es-MX', { month: 'long', year: 'numeric' });
+
+  const porModo = {} as Record<Modo, ResumenModoMes>;
+  for (const modo of ['PERSONAL', 'NEGOCIO', 'TIENDA'] as Modo[]) {
+    const r = resumenDelMes(transacciones, modo);
+    const fijo = modo === 'PERSONAL' ? ingresoFijo : 0;
+    const ingresos = r.ingresos + fijo;
+    const entry: ResumenModoMes = { ingresos, gastos: r.gastos, balance: ingresos - r.gastos };
+    if (modo === 'TIENDA') entry.inventarioMes = inventarioDelMes(transacciones, modo, hoy);
+    porModo[modo] = entry;
+  }
+
+  const hayDatos =
+    porModo.PERSONAL.ingresos + porModo.PERSONAL.gastos +
+      porModo.NEGOCIO.ingresos + porModo.NEGOCIO.gastos +
+      porModo.TIENDA.ingresos + porModo.TIENDA.gastos >
+    0;
+
+  // Tendencias (solo las que tengan mes pasado con qué comparar).
+  const tendencias: Tendencia[] = [];
+
+  // Casa: gasto total y la categoría que más creció.
+  const casa = comparacionMensual(transacciones, 'PERSONAL', ingresoFijo);
+  if (casa.hayMesPasado) {
+    const g = pctCambio(casa.gastosEste, casa.gastosPasado);
+    if (g !== null && Math.abs(g) >= 5) {
+      tendencias.push({
+        texto: `Gastaste ${Math.abs(g)}% ${g < 0 ? 'menos' : 'más'} que el mes pasado en la casa.`,
+        tipo: g < 0 ? 'BIEN' : 'OJO',
+      });
+    }
+    const subio = casa.cambios.find((c) => c.dir === 'mas' && c.pct !== null && c.pct >= 0.15);
+    if (subio) {
+      tendencias.push({
+        texto: `Los gastos de ${subio.nombre.toLowerCase()} crecieron ${Math.round((subio.pct ?? 0) * 100)}%.`,
+        tipo: 'OJO',
+      });
+    }
+  }
+
+  // Casa: ingresos.
+  if (casa.hayMesPasado) {
+    const ingPasado = casa.ahorroPasado + casa.gastosPasado; // ingresos = ahorro + gastos
+    const ingEste = casa.ahorroEste + casa.gastosEste;
+    const i = pctCambio(ingEste, ingPasado);
+    if (i !== null && i >= 5) {
+      tendencias.push({ texto: `Tus ingresos de la casa aumentaron ${i}%.`, tipo: 'BIEN' });
+    }
+  }
+
+  // Tienda: ganancia.
+  const tienda = comparacionMensual(transacciones, 'TIENDA', 0);
+  if (tienda.hayMesPasado) {
+    const gan = pctCambio(porModo.TIENDA.balance, tienda.ahorroPasado);
+    if (gan !== null && Math.abs(gan) >= 5) {
+      tendencias.push({
+        texto: `La ganancia de la tienda ${gan >= 0 ? 'mejoró' : 'bajó'} ${Math.abs(gan)}%.`,
+        tipo: gan >= 0 ? 'BIEN' : 'CUIDADO',
+      });
+    }
+  }
+
+  // Negocio: resultado neto.
+  const neg = comparacionMensual(transacciones, 'NEGOCIO', 0);
+  if (neg.hayMesPasado) {
+    const n = pctCambio(porModo.NEGOCIO.balance, neg.ahorroPasado);
+    if (n !== null && Math.abs(n) >= 5) {
+      tendencias.push({
+        texto: `El resultado del negocio ${n >= 0 ? 'mejoró' : 'bajó'} ${Math.abs(n)}%.`,
+        tipo: n >= 0 ? 'BIEN' : 'CUIDADO',
+      });
+    }
+  }
+
+  return { mesNombre, hayDatos, porModo, tendencias: tendencias.slice(0, 5) };
+}

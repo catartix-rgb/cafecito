@@ -35,7 +35,7 @@ export function Distribucion() {
             <div className="h-2.5 overflow-hidden rounded-full bg-white/10">
               <div
                 className="h-full rounded-full"
-                style={{ width: `${Math.max(4, s.pct * 100)}%`, background: m.acento, transition: 'width 0.5s ease-out' }}
+                style={{ width: `${Math.max(4, s.pct * 100)}%`, background: m.acento, transition: 'width 0.7s var(--ease-suave)' }}
               />
             </div>
           </div>
