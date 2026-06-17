@@ -29,7 +29,8 @@ export function App() {
   return (
     <>
       <Fondo />
-      <div className="min-h-dvh">
+      {/* key={vista} reinicia la animación al cambiar de pestaña: transición suave. */}
+      <div key={vista} className="aparecer min-h-dvh">
         {vista === 'inicio' ? (
           <Inicio
             onEditarMeta={() => setEditandoMeta(true)}

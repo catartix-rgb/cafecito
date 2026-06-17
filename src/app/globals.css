@@ -21,10 +21,41 @@ body {
   letter-spacing: -0.01em;
 }
 
+/* Easings orgánicos compartidos: uno suave y uno con ligero "resorte"
+   (sobreimpulso) para que los componentes se sientan vivos y físicos. */
+:root {
+  --ease-suave: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-resorte: cubic-bezier(0.34, 1.45, 0.5, 1);
+}
+
 button {
   -webkit-user-select: none;
   user-select: none;
   touch-action: manipulation;
+  /* Respuesta inmediata y elástica al tocar (baseline para todo botón). */
+  transition: transform 0.24s var(--ease-resorte), filter 0.2s ease, opacity 0.2s ease,
+    background-color 0.2s ease;
+}
+button:active {
+  transform: scale(0.965);
+}
+
+/* Inputs: brillo suave al enfocar, como cristal que reacciona. */
+input {
+  transition: box-shadow 0.22s var(--ease-suave), background-color 0.22s ease;
+}
+input:focus {
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.2), 0 0 16px rgba(255, 255, 255, 0.08);
+}
+
+/* Accesibilidad: si el sistema pide menos movimiento, lo respetamos. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
 }
 
 /**
@@ -43,21 +74,32 @@ button {
 }
 
 .glass {
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.14),
-    rgba(255, 255, 255, 0.04) 48%,
-    rgba(255, 255, 255, 0.09)
-  );
+  /* Dos capas: (1) un scrim oscuro muy sutil, un poco más fuerte abajo, que da
+     contraste al texto blanco SIN tapar el fondo; (2) el brillo de cristal.
+     La transparencia sigue dominando (alfas bajas). */
+  background:
+    linear-gradient(180deg, rgba(6, 5, 4, 0.04) 0%, rgba(6, 5, 4, 0.2) 100%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.02) 50%, rgba(255, 255, 255, 0.07));
   border: 1px solid rgba(255, 255, 255, 0.22);
-  -webkit-backdrop-filter: blur(14px) saturate(180%) brightness(1.06);
-  backdrop-filter: blur(14px) saturate(180%) brightness(1.06);
+  -webkit-backdrop-filter: blur(16px) saturate(170%) brightness(1.02);
+  backdrop-filter: blur(16px) saturate(170%) brightness(1.02);
   /* Profundidad (sombra externa) + espesor de cristal (luz arriba, sombra abajo). */
   box-shadow:
     0 10px 34px rgba(0, 0, 0, 0.3),
     0 2px 6px rgba(0, 0, 0, 0.16),
     inset 0 1px 1px rgba(255, 255, 255, 0.5),
     inset 0 -1px 1px rgba(0, 0, 0, 0.18);
+}
+
+/* Sombra fina en texto e iconos dentro del vidrio: legibilidad sobre cualquier
+   fondo, manteniendo el material transparente. Es la clave del contraste. */
+.glass,
+.glass-fuerte {
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.38);
+}
+.glass svg,
+.glass-fuerte svg {
+  filter: drop-shadow(0 1px 1.5px rgba(0, 0, 0, 0.3));
 }
 
 /* Variante más sólida para barras y hojas (nav inferior, sheets). */
@@ -97,20 +139,20 @@ button {
    (Chrome/Android, Firefox). En iOS Safari se queda el glass base de arriba. */
 @supports ((-webkit-backdrop-filter: url("#x")) or (backdrop-filter: url("#x"))) {
   .glass {
-    -webkit-backdrop-filter: url(#liquid-glass) blur(5px) saturate(180%) brightness(1.06);
-    backdrop-filter: url(#liquid-glass) blur(5px) saturate(180%) brightness(1.06);
+    -webkit-backdrop-filter: url(#liquid-glass) blur(7px) saturate(170%) brightness(1.02);
+    backdrop-filter: url(#liquid-glass) blur(7px) saturate(170%) brightness(1.02);
   }
   .glass-fuerte {
-    -webkit-backdrop-filter: url(#liquid-glass) blur(9px) saturate(170%) brightness(1.04);
-    backdrop-filter: url(#liquid-glass) blur(9px) saturate(170%) brightness(1.04);
+    -webkit-backdrop-filter: url(#liquid-glass) blur(10px) saturate(165%) brightness(1.02);
+    backdrop-filter: url(#liquid-glass) blur(10px) saturate(165%) brightness(1.02);
   }
 }
 
 @keyframes aparecer {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; transform: translateY(10px) scale(0.985); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
 }
-.aparecer { animation: aparecer 0.28s ease-out both; }
+.aparecer { animation: aparecer 0.4s var(--ease-resorte) both; }
 
 @keyframes subir {
   from { transform: translateY(100%); }
