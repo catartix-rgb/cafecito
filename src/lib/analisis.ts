@@ -447,6 +447,85 @@ export function invertidoEnInventario(transacciones: Transaccion[], modo: Modo):
 }
 
 // ===========================================================================
+// Caja continua: el saldo NUNCA se reinicia. Cada mes es un "período" cuyo
+// saldo inicial es el saldo final del mes anterior. Todo se reconstruye a
+// partir de los movimientos guardados (que jamás se borran), así que el nuevo
+// mes se crea solo y la información histórica queda consultable.
+// ===========================================================================
+
+export type PeriodoMes = {
+  clave: string; // '2026-06'
+  nombre: string; // 'junio de 2026'
+  esActual: boolean;
+  saldoInicial: number;
+  ingresos: number; // en PERSONAL incluye el ingreso fijo del hogar
+  gastos: number;
+  saldoFinal: number;
+  movimientos: Transaccion[]; // del más reciente al más antiguo
+};
+
+/**
+ * Historial mensual de un modo, del mes más reciente al más antiguo.
+ * Recorre desde el mes del primer movimiento hasta el mes actual (incluye
+ * meses sin actividad para no romper la cadena de saldos). En PERSONAL, el
+ * ingreso fijo del hogar se abona cada mes del período.
+ */
+export function historialMensual(
+  transacciones: Transaccion[],
+  modo: Modo,
+  ingresoFijo = 0
+): PeriodoMes[] {
+  const fijo = modo === 'PERSONAL' ? ingresoFijo : 0;
+  const propios = transacciones
+    .filter((t) => t.modo === modo)
+    .sort((a, b) => a.fecha.localeCompare(b.fecha));
+
+  const hoy = new Date();
+  const fin = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+  const primera = propios.length > 0 ? new Date(propios[0].fecha) : hoy;
+  const cursor = new Date(primera.getFullYear(), primera.getMonth(), 1);
+  if (cursor > fin) cursor.setTime(fin.getTime()); // fechas futuras: solo el mes actual
+
+  const periodos: PeriodoMes[] = [];
+  let saldo = 0;
+  let guarda = 0; // tope de seguridad (10 años)
+  while (cursor <= fin && guarda++ < 120) {
+    const y = cursor.getFullYear();
+    const mIdx = cursor.getMonth();
+    const movs = propios.filter((t) => {
+      const d = new Date(t.fecha);
+      return d.getFullYear() === y && d.getMonth() === mIdx;
+    });
+    let ingresos = fijo;
+    let gastos = 0;
+    for (const t of movs) {
+      if (t.tipo === 'INGRESO') ingresos += t.monto;
+      else gastos += t.monto;
+    }
+    const saldoInicial = saldo;
+    saldo = saldoInicial + ingresos - gastos;
+    periodos.push({
+      clave: `${y}-${String(mIdx + 1).padStart(2, '0')}`,
+      nombre: cursor.toLocaleDateString('es-MX', { month: 'long', year: 'numeric' }),
+      esActual: y === hoy.getFullYear() && mIdx === hoy.getMonth(),
+      saldoInicial,
+      ingresos,
+      gastos,
+      saldoFinal: saldo,
+      movimientos: movs.slice().reverse(),
+    });
+    cursor.setMonth(cursor.getMonth() + 1);
+  }
+  return periodos.reverse(); // más reciente primero
+}
+
+/** Saldo acumulado en caja hoy (saldo final del período actual). Nunca se reinicia. */
+export function saldoActual(transacciones: Transaccion[], modo: Modo, ingresoFijo = 0): number {
+  const h = historialMensual(transacciones, modo, ingresoFijo);
+  return h.length > 0 ? h[0].saldoFinal : 0;
+}
+
+// ===========================================================================
 // Resumen mensual automático: totales por modo + tendencias contra el mes
 // pasado. Se calcula sobre los datos ya registrados, así que se "actualiza
 // solo" cada mes (siempre mira el mes en curso).

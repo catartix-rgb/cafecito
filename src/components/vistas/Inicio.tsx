@@ -23,6 +23,7 @@ import { Distribucion } from '../analisis/Distribucion';
 import { Comparacion } from '../analisis/Comparacion';
 import { AlertasInusuales } from '../analisis/AlertasInusuales';
 import { MetasAhorro } from '../MetasAhorro';
+import { SaldoCaja } from '../SaldoCaja';
 
 export function Inicio({
   onEditarMeta,
@@ -75,6 +76,9 @@ export function Inicio({
 
       {/* Semáforo financiero (tócalo para saber por qué) */}
       <Semaforo />
+
+      {/* Saldo acumulado en caja (nunca se reinicia) + historial mensual */}
+      <SaldoCaja />
 
       {modo === 'TIENDA' ? (
         <TiendaResumen />

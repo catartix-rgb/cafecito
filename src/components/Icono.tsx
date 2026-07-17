@@ -35,6 +35,8 @@ import {
   PiggyBank,
   Tag,
   Receipt,
+  History,
+  Landmark,
   type LucideProps,
 } from 'lucide-react';
 import type { ComponentType } from 'react';
@@ -72,6 +74,8 @@ const MAPA: Record<string, ComponentType<LucideProps>> = {
   PiggyBank,
   Tag,
   Receipt,
+  History,
+  Landmark,
 };
 
 export function Icono({ nombre, ...props }: { nombre: string } & LucideProps) {
