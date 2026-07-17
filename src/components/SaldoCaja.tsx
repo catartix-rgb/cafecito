@@ -1,13 +1,13 @@
 'use client';
 
 /**
- * Saldo en caja: el dinero acumulado que NUNCA se reinicia al cambiar de mes
- * (el saldo final de un mes es el inicial del siguiente). Con acceso directo
- * al historial mensual, como una libreta de caja.
+ * Balance del mes en curso: cada mes es un corte independiente que empieza
+ * en $0 (no se arrastran saldos de meses anteriores). Con acceso directo al
+ * historial mensual, como una libreta donde cada mes tiene su propia hoja.
  */
 import { useMemo, useState } from 'react';
 import { modos } from '@/lib/theme';
-import { saldoActual } from '@/lib/analisis';
+import { balanceDelMes } from '@/lib/analisis';
 import { pesos } from '@/lib/format';
 import { useModo } from '@/state/mode';
 import { useTransacciones } from '@/state/useTransacciones';
@@ -23,7 +23,11 @@ export function SaldoCaja() {
   const ingresoFijo = useIngresoFijo();
   const [historialAbierto, setHistorialAbierto] = useState(false);
 
-  const saldo = useMemo(() => saldoActual(tx, modo, ingresoFijo), [tx, modo, ingresoFijo]);
+  const balance = useMemo(() => balanceDelMes(tx, modo, ingresoFijo), [tx, modo, ingresoFijo]);
+  const mesNombre = useMemo(
+    () => new Date().toLocaleDateString('es-MX', { month: 'long' }),
+    []
+  );
 
   return (
     <>
@@ -35,12 +39,14 @@ export function SaldoCaja() {
           <Icono nombre="Landmark" size={24} />
         </span>
         <div className="min-w-0 flex-1">
-          <p className="text-xs font-medium uppercase tracking-wide text-white/55">Saldo en caja</p>
+          <p className="text-xs font-medium uppercase tracking-wide text-white/55">
+            Balance de {mesNombre}
+          </p>
           <p
             className="text-3xl font-extrabold tabular-nums"
-            style={{ color: saldo >= 0 ? 'var(--color-bien)' : 'var(--color-cuidado)' }}
+            style={{ color: balance >= 0 ? 'var(--color-bien)' : 'var(--color-cuidado)' }}
           >
-            {pesos(saldo)}
+            {pesos(balance)}
           </p>
         </div>
         <button

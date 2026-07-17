@@ -447,28 +447,28 @@ export function invertidoEnInventario(transacciones: Transaccion[], modo: Modo):
 }
 
 // ===========================================================================
-// Caja continua: el saldo NUNCA se reinicia. Cada mes es un "período" cuyo
-// saldo inicial es el saldo final del mes anterior. Todo se reconstruye a
-// partir de los movimientos guardados (que jamás se borran), así que el nuevo
-// mes se crea solo y la información histórica queda consultable.
+// Cortes mensuales: cada mes es un período INDEPENDIENTE que empieza en $0.
+// No se arrastran saldos (ni positivos ni negativos) entre meses. Todo se
+// reconstruye a partir de los movimientos guardados (que jamás se borran):
+// el período nuevo se crea solo al llegar el mes, y los anteriores quedan
+// consultables en el historial. El "período" de cada movimiento se deriva de
+// su fecha (clave 'AAAA-MM'), así no hay campos duplicados que migrar.
 // ===========================================================================
 
 export type PeriodoMes = {
-  clave: string; // '2026-06'
-  nombre: string; // 'junio de 2026'
+  clave: string; // '2026-07'
+  nombre: string; // 'julio de 2026'
   esActual: boolean;
-  saldoInicial: number;
   ingresos: number; // en PERSONAL incluye el ingreso fijo del hogar
   gastos: number;
-  saldoFinal: number;
+  balance: number; // corte del mes: siempre parte de $0
   movimientos: Transaccion[]; // del más reciente al más antiguo
 };
 
 /**
  * Historial mensual de un modo, del mes más reciente al más antiguo.
- * Recorre desde el mes del primer movimiento hasta el mes actual (incluye
- * meses sin actividad para no romper la cadena de saldos). En PERSONAL, el
- * ingreso fijo del hogar se abona cada mes del período.
+ * Cada período se calcula por separado (sin arrastres). Se listan los meses
+ * con movimientos y siempre el mes actual, aunque vaya en ceros.
  */
 export function historialMensual(
   transacciones: Transaccion[],
@@ -487,42 +487,43 @@ export function historialMensual(
   if (cursor > fin) cursor.setTime(fin.getTime()); // fechas futuras: solo el mes actual
 
   const periodos: PeriodoMes[] = [];
-  let saldo = 0;
   let guarda = 0; // tope de seguridad (10 años)
   while (cursor <= fin && guarda++ < 120) {
     const y = cursor.getFullYear();
     const mIdx = cursor.getMonth();
+    const esActual = y === hoy.getFullYear() && mIdx === hoy.getMonth();
     const movs = propios.filter((t) => {
       const d = new Date(t.fecha);
       return d.getFullYear() === y && d.getMonth() === mIdx;
     });
-    let ingresos = fijo;
-    let gastos = 0;
-    for (const t of movs) {
-      if (t.tipo === 'INGRESO') ingresos += t.monto;
-      else gastos += t.monto;
+    // Meses sin actividad no aparecen en el historial (salvo el actual).
+    if (movs.length > 0 || esActual) {
+      let ingresos = fijo;
+      let gastos = 0;
+      for (const t of movs) {
+        if (t.tipo === 'INGRESO') ingresos += t.monto;
+        else gastos += t.monto;
+      }
+      periodos.push({
+        clave: `${y}-${String(mIdx + 1).padStart(2, '0')}`,
+        nombre: cursor.toLocaleDateString('es-MX', { month: 'long', year: 'numeric' }),
+        esActual,
+        ingresos,
+        gastos,
+        balance: ingresos - gastos,
+        movimientos: movs.slice().reverse(),
+      });
     }
-    const saldoInicial = saldo;
-    saldo = saldoInicial + ingresos - gastos;
-    periodos.push({
-      clave: `${y}-${String(mIdx + 1).padStart(2, '0')}`,
-      nombre: cursor.toLocaleDateString('es-MX', { month: 'long', year: 'numeric' }),
-      esActual: y === hoy.getFullYear() && mIdx === hoy.getMonth(),
-      saldoInicial,
-      ingresos,
-      gastos,
-      saldoFinal: saldo,
-      movimientos: movs.slice().reverse(),
-    });
     cursor.setMonth(cursor.getMonth() + 1);
   }
   return periodos.reverse(); // más reciente primero
 }
 
-/** Saldo acumulado en caja hoy (saldo final del período actual). Nunca se reinicia. */
-export function saldoActual(transacciones: Transaccion[], modo: Modo, ingresoFijo = 0): number {
-  const h = historialMensual(transacciones, modo, ingresoFijo);
-  return h.length > 0 ? h[0].saldoFinal : 0;
+/** Balance del mes en curso (empieza en $0 cada mes; sin arrastres). */
+export function balanceDelMes(transacciones: Transaccion[], modo: Modo, ingresoFijo = 0): number {
+  const r = resumenDelMes(transacciones, modo);
+  const fijo = modo === 'PERSONAL' ? ingresoFijo : 0;
+  return r.ingresos + fijo - r.gastos;
 }
 
 // ===========================================================================

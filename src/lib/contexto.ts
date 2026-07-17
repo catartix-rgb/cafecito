@@ -15,7 +15,6 @@ import {
   comparacionMensual,
   gastosInusuales,
   invertidoEnInventario,
-  saldoActual,
   PRECIO_COSTAL,
 } from './analisis';
 import { pesos, fechaCorta } from './format';
@@ -53,11 +52,8 @@ export function construirContexto(
   lineas.push(`Hoy es ${hoy}. Todos los montos están en pesos mexicanos.`);
   lineas.push('');
   lineas.push(
-    'SALDO EN CAJA (acumulado desde el inicio; NUNCA se reinicia al cambiar de mes — el saldo final de un mes pasa como saldo inicial del siguiente):'
+    'IMPORTANTE: cada mes es un corte independiente que empieza en $0. Los balances NO se arrastran entre meses (ni ganancias ni pérdidas del mes anterior). Los meses anteriores solo se consultan en el historial.'
   );
-  lineas.push(`- Casa: ${pesos(saldoActual(transacciones, 'PERSONAL', ingresoFijo))}`);
-  lineas.push(`- Negocio (café): ${pesos(saldoActual(transacciones, 'NEGOCIO'))}`);
-  lineas.push(`- Tienda: ${pesos(saldoActual(transacciones, 'TIENDA'))}`);
   lineas.push('');
   lineas.push('NEGOCIO (el café) — este mes:');
   lineas.push(`- Ventas (entró): ${pesos(neg.ingresos)}`);

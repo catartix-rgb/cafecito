@@ -1,9 +1,9 @@
 'use client';
 
 /**
- * Historial de caja por meses: una tarjeta por mes (saldo inicial, entró,
- * salió, saldo final) y, al tocarla, el detalle completo de movimientos.
- * Como una libreta de caja: nada se borra y el saldo se encadena mes a mes.
+ * Historial por meses: una tarjeta por mes (entró, salió y balance del mes)
+ * y, al tocarla, el detalle completo de movimientos. Cada mes es un corte
+ * independiente que empieza en $0; nada se borra nunca.
  */
 import { useMemo, useState } from 'react';
 import { modos } from '@/lib/theme';
@@ -46,7 +46,7 @@ export function SheetHistorial({ onClose }: { onClose: () => void }) {
           </span>
           <div className="flex-1">
             <h2 className="text-lg font-extrabold">Historial de {m.nombre.toLowerCase()}</h2>
-            <p className="text-sm text-white/55">El saldo se acumula mes con mes</p>
+            <p className="text-sm text-white/55">Cada mes tiene su propio corte</p>
           </div>
           <button
             aria-label="Cerrar"
@@ -100,14 +100,13 @@ function TarjetaMes({
             <Icono nombre="ChevronDown" size={18} />
           </span>
         </div>
-        <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-[15px]">
-          <Linea etiqueta="Saldo inicial" valor={pesos(p.saldoInicial)} />
-          <Linea etiqueta="Entró" valor={pesos(p.ingresos)} color="var(--color-bien)" />
-          <Linea etiqueta="Salió" valor={pesos(p.gastos)} />
-          <Linea
-            etiqueta="Saldo final"
-            valor={pesos(p.saldoFinal)}
-            color={p.saldoFinal >= 0 ? 'var(--color-bien)' : 'var(--color-cuidado)'}
+        <div className="grid grid-cols-3 gap-x-4 gap-y-1 text-[15px]">
+          <Cifra etiqueta="Entró" valor={pesos(p.ingresos)} color="var(--color-bien)" />
+          <Cifra etiqueta="Salió" valor={pesos(p.gastos)} />
+          <Cifra
+            etiqueta="Balance"
+            valor={pesos(p.balance)}
+            color={p.balance >= 0 ? 'var(--color-bien)' : 'var(--color-cuidado)'}
             fuerte
           />
         </div>
@@ -150,10 +149,10 @@ function TarjetaMes({
   );
 }
 
-function Linea({ etiqueta, valor, color = '#fff', fuerte = false }: { etiqueta: string; valor: string; color?: string; fuerte?: boolean }) {
+function Cifra({ etiqueta, valor, color = '#fff', fuerte = false }: { etiqueta: string; valor: string; color?: string; fuerte?: boolean }) {
   return (
-    <div className="flex items-baseline justify-between gap-2">
-      <span className="text-white/55">{etiqueta}</span>
+    <div className="flex flex-col gap-0.5">
+      <span className="text-xs text-white/55">{etiqueta}</span>
       <span className={`tabular-nums ${fuerte ? 'font-extrabold' : 'font-semibold'}`} style={{ color }}>
         {valor}
       </span>
