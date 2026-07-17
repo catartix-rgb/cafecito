@@ -74,6 +74,16 @@ export function Consejos({ onAbrirAsesor }: { onAbrirAsesor: () => void }) {
           </Glass>
         ))}
       </div>
+
+      {/* Reinicio de la app: discreto y al final, para no tocarlo por accidente.
+          Lleva a /reset, que pide confirmación antes de borrar nada. */}
+      <a
+        href="/reset"
+        className="mx-auto mt-4 flex items-center gap-2 rounded-full px-5 py-3 text-sm font-semibold text-white/45"
+      >
+        <Icono nombre="Delete" size={16} />
+        Reiniciar la app (borrar todo)
+      </a>
     </div>
   );
 }
